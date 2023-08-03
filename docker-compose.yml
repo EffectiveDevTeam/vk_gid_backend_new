@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  main-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      MAIN_SVC_PORT: ${MAIN_SVC_PORT:-4000}
+
+      PG_HOST: ${PG_HOST:-127.0.0.1}
+      PG_DATABASE: ${PG_DATABASE:-database}
+      PG_USER: ${PG_USER:-root}
+      PG_PASSWORD: ${PG_PASSWORD:-secret}
+      PG_PORT: ${PG_PORT:-5432}
+
+      DATABASE_URL: "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE:-secret}?schema=public"
+
+      JWT_KEY: ${JWT_KEY:-SECRET}
+
+      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secrEt}
+
+      SWAGGER_THEME: ${SWAGGER_THEME:-dark}
+    ports:
+      - '${MAIN_SVC_PORT:-4000}:${MAIN_SVC_PORT:-4000}'
+    depends_on:
+      - db
+
+  # click_server:
+  #   image: yandex/clickhouse-server
+  #   environment:
+  #     CLICKHOUSE_PORT: ${CLICKHOUSE_PORT:-8123}
+  #     CLICKHOUSE_DB: ${CLICKHOUSE_DB:-test}
+  #     CLICKHOUSE_USER: ${CLICKHOUSE_USER:-test}
+  #     CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-secret}
+  #   ports:
+  #     - '${CLICKHOUSE_PORT:-8123}:${CLICKHOUSE_PORT:-8123}'
+  #   volumes:
+  #     - 'clickhouse:/var/lib/clickhouse'
+  #   depends_on:
+  #     - db
+
+  db:
+    image: postgres:13.1
+    restart: always
+    environment:
+      POSTGRES_USER: ${PG_USER:-root}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-secret}
+      POSTGRES_DB: ${PG_DATABASE:-database}
+      POSTGRES_PORT: ${PG_PORT:-5432}
+    ports:
+      - '${PG_PORT:-5432}:${PG_PORT:-5432}'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  clickhouse:
+  db-data:

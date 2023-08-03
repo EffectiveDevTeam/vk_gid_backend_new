@@ -1,0 +1,13 @@
+.git
+node_modules
+dist
+.eslint*
+.prettier*
+.gitignore
+.gitattributes
+.dockerignore
+Dockerfile
+docker-compose.yaml
+README.md
+npm-debug.log
+prisma/migrations

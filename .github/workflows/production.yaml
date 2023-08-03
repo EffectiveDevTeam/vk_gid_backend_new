@@ -1,0 +1,65 @@
+name: Deploy production
+
+concurrency: production
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - uses: LuisEnMarroquin/setup-ssh-action@v2.0.0
+        with:
+          ORIGIN: ${{ secrets.PRODUCTION_SSH_HOST }}
+          SSHKEY: ${{ secrets.PRODUCTION_SSH_PRIVATE_KEY }}
+          NAME: production
+          USER: ${{ secrets.PRODUCTION_SSH_USER }}
+
+      - name: Run docker compose
+        run: |
+          echo $PRODUCTION_ENV | base64 -d > .env.production
+          docker context create --docker host=ssh://production production
+          docker context use production
+          docker compose --env-file=.env.production up --build -d
+        env:
+          PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
+
+#name: Deploy development
+#
+#concurrency: development
+#
+#on:
+#  push:
+#    branches:
+#      - develop
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#    environment: Development
+#    steps:
+#      - name: Clone repository
+#        uses: actions/checkout@v3
+#
+#      - uses: LuisEnMarroquin/setup-ssh-action@v2.0.0
+#        with:
+#          ORIGIN: ${{ env.SSH_HOST }}
+#          SSHKEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#          NAME: development
+#          USER: ${{ env.SSH_USER }}
+#
+#      - name: Run docker compose
+#        run: |
+#          echo $DEVELOPMENT_ENV | base64 -d > .env.development
+#          docker context create --docker host=ssh://development development
+#          docker context use development
+#          docker compose --env-file=.env.development -p crm-new-people-dev up --build -d
+#        env:
+#          DEVELOPMENT_ENV: ${{ secrets.DEVELOPMENT_ENV }}
