@@ -1,3 +1,3 @@
-export * from './getAdmin.decorator';
+export * from './user.decorator';
 export * from './auth-skip.decorator';
 export * from './role.decorator';

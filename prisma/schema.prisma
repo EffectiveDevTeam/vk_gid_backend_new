@@ -10,27 +10,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model AdminEntity {
-  uid       Int    @id @default(autoincrement())
-  username  String @unique
-  pass_hash String
-  pass_salt String
-  role      Int    @default(1)
+model UserEntity {
+  vk_id               Int                        @id @unique
+  role                Int                        @default(1)
+  registred           Int                        @default(0)
+  last_seen           Int                        @default(0)
+  tasks               TaskEntity[]
+  registred_materials RegistredMaterialsEntity[]
+  selected_directions UserDirectionEntity[]
+  uploaded_documents  DocumentEntity[]
+  department          DepartmentEnum @default(REDACTION)
 }
 
-model RequestSupporterEntity {
-  id             Int     @id @default(autoincrement())
-  name           String
-  phone          String  @unique
-  address        String
-  social_media   String
-  help_agit      Boolean @default(false)
-  help_part_life Boolean @default(false)
-  help_friends   Boolean @default(false)
-  help_vote      Boolean @default(false)
-  help_custom    String? @db.VarChar(200)
-  speak_out      String? @db.Text
-  request_time   Int     @default(0)
-  ip             String  @default("0.0.0.0")
-  useragent      String  @default("")
+model DocumentEntity {
+  id         Int               @id @default(autoincrement())
+  path       String
+  author     UserEntity        @relation(fields: [authorId], references: [vk_id])
+  authorId   Int
+  is_saved   Boolean           @default(false)
+  directions DirectionEntity[]
+}
+
+model UserDirectionEntity {
+  id           Int        @id @default(autoincrement())
+  direction_id Int
+  author       UserEntity @relation(fields: [authorId], references: [vk_id])
+  authorId     Int
+}
+
+model DirectionEntity {
+  id       Int            @id @default(autoincrement())
+  title    String
+  document DocumentEntity @relation(fields: [docId], references: [id])
+  docId    Int
+}
+
+model RegistredMaterialsEntity {
+  id           Int        @id @default(autoincrement())
+  is_moderated Boolean    @default(false)
+  watches      Int        @default(0)
+  author       UserEntity @relation(fields: [authorId], references: [vk_id])
+  authorId     Int
+}
+
+model TaskEntity {
+  id             Int              @id @default(autoincrement())
+  material_type  MaterialTypeEnum
+  moderated_link String           @default("")
+  is_moderated   Boolean          @default(false)
+  author         UserEntity       @relation(fields: [authorId], references: [vk_id])
+  authorId       Int
+}
+
+model ProductEntity {
+  id    Int         @id @default(autoincrement())
+  type  ProductEnum
+  cost  Int
+  title String
+}
+
+enum ProductEnum {
+  VOICES
+  MUSIC
+}
+
+enum MaterialTypeEnum {
+  POST
+  REPORTAGE
+  CLIP
+  VIDEO
+  PODCAST
+}
+
+enum DepartmentEnum {
+  REDACTION
+  PODCASTER
+  MUSIC
 }

@@ -1,10 +1,10 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { AdminEntity } from '@prisma/client';
+import { UserEntity } from '@prisma/client';
 
 export const User = createParamDecorator(
-  (data: string, ctx: ExecutionContext): AdminEntity => {
+  (data: string, ctx: ExecutionContext): UserEntity => {
     const request = ctx.switchToHttp().getRequest();
-    const user: AdminEntity = request.user;
+    const user: UserEntity = request.user;
 
     return data ? user?.[data] : user;
   },
