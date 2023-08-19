@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { UsersController } from 'src/users/users.controller';
-import { UsersService } from 'src/users/users.service';
+import { TasksController } from './tasks.controller';
+import { TasksService } from './tasks.service';
 import { ConfigModule } from '@nestjs/config';
 import { VKModule } from '@app/vk';
 import { PrismaModule } from '@app/prisma';
 
 @Module({
   imports: [ConfigModule, VKModule, PrismaModule],
-  controllers: [UsersController],
-  providers: [UsersService],
+  controllers: [TasksController],
+  providers: [TasksService],
   exports: [],
 })
-export class UsersModule {}
+export class TasksModule {}

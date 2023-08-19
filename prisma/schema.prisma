@@ -15,34 +15,36 @@ model UserEntity {
   role                Int                        @default(1)
   registred           Int                        @default(0)
   last_seen           Int                        @default(0)
-  tasks               TaskEntity[]
+  tasksModerated      TaskEntity[]               @relation(name: "moderated")
+  tasks               TaskEntity[]               @relation(name: "completed")
   registred_materials RegistredMaterialsEntity[]
   selected_directions UserDirectionEntity[]
   uploaded_documents  DocumentEntity[]
-  department          DepartmentEnum @default(REDACTION)
+  department          DepartmentEnum             @default(REDACTION)
 }
 
 model DocumentEntity {
-  id         Int               @id @default(autoincrement())
-  path       String
-  author     UserEntity        @relation(fields: [authorId], references: [vk_id])
-  authorId   Int
-  is_saved   Boolean           @default(false)
-  directions DirectionEntity[]
+  id                 Int                  @id @default(autoincrement())
+  path               String
+  author             UserEntity           @relation(fields: [authorId], references: [vk_id])
+  authorId           Int
+  is_saved           Boolean              @default(false)
+  TasksAttachedFiles TasksAttachedFiles[]
 }
 
 model UserDirectionEntity {
-  id           Int        @id @default(autoincrement())
-  direction_id Int
-  author       UserEntity @relation(fields: [authorId], references: [vk_id])
-  authorId     Int
+  id          Int             @id @default(autoincrement())
+  direction   DirectionEntity @relation(fields: [directionId], references: [id])
+  directionId Int
+  author      UserEntity      @relation(fields: [authorId], references: [vk_id])
+  authorId    Int
 }
 
 model DirectionEntity {
-  id       Int            @id @default(autoincrement())
-  title    String
-  document DocumentEntity @relation(fields: [docId], references: [id])
-  docId    Int
+  id                  Int                   @id @default(autoincrement())
+  title               String
+  icon_name           String
+  UserDirectionEntity UserDirectionEntity[]
 }
 
 model RegistredMaterialsEntity {
@@ -54,12 +56,24 @@ model RegistredMaterialsEntity {
 }
 
 model TaskEntity {
-  id             Int              @id @default(autoincrement())
+  id             Int                  @id @default(autoincrement())
   material_type  MaterialTypeEnum
-  moderated_link String           @default("")
-  is_moderated   Boolean          @default(false)
-  author         UserEntity       @relation(fields: [authorId], references: [vk_id])
+  moderated_link String               @default("")
+  is_moderated   Boolean              @default(false)
+  text           String
+  author         UserEntity           @relation(fields: [authorId], references: [vk_id], name: "moderated")
   authorId       Int
+  completed_by   UserEntity           @relation(fields: [completed_byId], references: [vk_id], name: "completed")
+  completed_byId Int
+  files          TasksAttachedFiles[]
+}
+
+model TasksAttachedFiles {
+  id         Int            @id @default(autoincrement())
+  task       TaskEntity     @relation(fields: [taskId], references: [id])
+  taskId     Int
+  document   DocumentEntity @relation(fields: [documentId], references: [id])
+  documentId Int
 }
 
 model ProductEntity {
