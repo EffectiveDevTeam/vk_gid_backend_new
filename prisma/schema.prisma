@@ -64,7 +64,7 @@ model TaskEntity {
   author         UserEntity           @relation(fields: [authorId], references: [vk_id], name: "moderated")
   authorId       Int
   completed_by   UserEntity           @relation(fields: [completed_byId], references: [vk_id], name: "completed")
-  completed_byId Int
+  completed_byId Int 
   files          TasksAttachedFiles[]
 }
 

@@ -6,17 +6,19 @@ import {
 } from '@nestjs/common';
 import { RoleEnum } from '@app/core/enums';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@app/prisma';
-import { UserEntity } from '@prisma/client';
 import { VKService } from '@app/vk';
 import { UsersFieldsEnum } from '@app/vk/enums';
+import { UserEntity } from './entities';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
   constructor(
     private readonly configService: ConfigService,
     private vkService: VKService,
-    private prisma: PrismaService,
+    @InjectRepository(UserEntity)
+    private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -31,15 +33,9 @@ export class UsersService implements OnApplicationBootstrap {
 
     await Promise.all(
       users.map(async (vk_id) => {
-        await this.prisma.userEntity.upsert({
-          where: {
-            vk_id,
-          },
-          create: {
-            vk_id,
-            role: RoleEnum.ADMIN,
-          },
-          update: {},
+        await this.usersRepository.save({
+          vk_id,
+          role: RoleEnum.ADMIN,
         });
       }),
     );
@@ -50,7 +46,7 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   async findOne(vk_id: number): Promise<UserEntity> {
-    const user = await this.prisma.userEntity.findUnique({ where: { vk_id } });
+    const user = await this.usersRepository.findOneBy({ vk_id });
 
     if (!user)
       throw new HttpException('Пользователь не найден.', HttpStatus.NO_CONTENT);
@@ -61,15 +57,13 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   async changeRole(vk_id: number, role: RoleEnum): Promise<UserEntity> {
-    const user = await this.prisma.userEntity.findUnique({ where: { vk_id } });
+    const user = await this.usersRepository.findOneBy({ vk_id });
 
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
-    return await this.prisma.userEntity.update({
-      where: { vk_id },
-      data: { role },
-    });
+    user.role = role;
+    return await this.usersRepository.save(user);
   }
 
   async getSelf(user: UserEntity): Promise<UserEntity> {
@@ -77,12 +71,8 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   async getTeam() {
-    const staff = await this.prisma.userEntity.findMany({
-      where: {
-        role: {
-          gte: RoleEnum.MODERATOR,
-        },
-      },
+    const staff = await this.usersRepository.find({
+      where: { role: MoreThanOrEqual(RoleEnum.MODERATOR) },
     });
     const sorted_staff = {};
     for (const i of staff) {

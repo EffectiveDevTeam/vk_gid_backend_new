@@ -9,7 +9,7 @@ export class TasksService {
   constructor(
     private readonly configService: ConfigService,
     private vkService: VKService,
-    private prisma: PrismaService,
+    
   ) {}
 
   async createTask(
@@ -22,7 +22,8 @@ export class TasksService {
       material_type: taskType,
       text,
       files: filesIds,
-
+      author: {   },
+      completed_by: { vk_id: 0 },
     };
     await this.prisma.taskEntity.create({ data });
   }
