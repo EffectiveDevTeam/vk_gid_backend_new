@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { Roles, RoleEnum, User } from '@app/core';
 import { CreateTaskDto } from './dto';
-import { UserEntity } from '@prisma/client';
+import { UserEntity } from 'src/users/entities';
 
 @ApiBearerAuth()
 @ApiTags('Задачи')

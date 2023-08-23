@@ -1,11 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsEnum, Length } from 'class-validator';
-import { TaskTypesEnum } from '../enums';
+import { MaterialTypesEnum } from '../enums';
 
 export class CreateTaskDto {
-  @ApiProperty({ enum: TaskTypesEnum })
-  @IsEnum(TaskTypesEnum, { message: 'Неизвестный тип публикации | taskType' })
-  taskType: TaskTypesEnum;
+  @ApiProperty({ enum: MaterialTypesEnum })
+  @IsEnum(MaterialTypesEnum, {
+    message: 'Неизвестный тип публикации | taskType',
+  })
+  taskType: MaterialTypesEnum;
 
   @ApiProperty({ description: 'Описание задачи' })
   text: string;
