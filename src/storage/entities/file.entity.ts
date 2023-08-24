@@ -7,7 +7,7 @@ export class FileEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.files)
+  @ManyToOne(() => UserEntity, (user) => user.uploaded_files)
   uploaded_by: UserEntity;
 
   @Column()

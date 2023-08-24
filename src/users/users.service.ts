@@ -80,8 +80,7 @@ export class UsersService implements OnApplicationBootstrap {
       sorted_staff[i.department].push(i);
     }
     const ids = staff.map((user) => user.vk_id);
-    const response = { items: sorted_staff };
-    return this.vkService.concatUserObject(response, ids, [
+    return this.vkService.concatUserObject<object>(sorted_staff, ids, [
       UsersFieldsEnum.PHOTO_200,
     ]);
   }

@@ -4,12 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { VKService } from '@app/vk';
+import { ConcatUsersType, VKService } from '@app/vk';
 import { UserEntity } from 'src/users/entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
 import { TaskEntity } from './entities';
-import { MaterialTypesEnum, TaskStatusEnum } from './enums';
+import { ActionsTaskEnum, MaterialTypesEnum, TaskStatusEnum } from './enums';
 import { FileEntity } from 'src/storage/entities';
 import { HttpMessagesEnum, RoleEnum, Roles } from '@app/core';
 
@@ -24,7 +24,55 @@ export class TasksService {
     private readonly filesRepository: Repository<FileEntity>,
   ) {}
 
-  @Roles(RoleEnum.MODERATOR)
+  getUsersVkIdsFromTasks(tasks: TaskEntity[]): number[] {
+    const users_ids = [];
+    for (const task of tasks) {
+      users_ids.push(task.author.vk_id);
+      users_ids.push(task.completed_by?.vk_id);
+    }
+    return users_ids;
+  }
+
+  async getTask(taskId: number): Promise<ConcatUsersType<TaskEntity>> {
+    const task = await this.getTaskOrException(taskId);
+
+    return this.vkService.concatUserObject<TaskEntity>(task, [
+      task.author.vk_id,
+      task.completed_by?.vk_id,
+    ]);
+  }
+
+  async getTasks() {
+    const currentTasks = await this.tasksRepository.findBy({
+      status: LessThan(TaskStatusEnum.COMPLETED),
+    });
+    const complettedTasks = await this.tasksRepository.find({
+      where: {
+        status: TaskStatusEnum.COMPLETED,
+      },
+      order: { completed_at: 'DESC' },
+      take: 10,
+    });
+    const allTasks = [...currentTasks, ...complettedTasks];
+
+    const users_ids = this.getUsersVkIdsFromTasks(allTasks);
+    return this.vkService.concatUserObject(
+      { currentTasks, complettedTasks },
+      users_ids,
+    );
+  }
+
+  async getModerationTasks() {
+    const tasks = await this.tasksRepository.find({
+      where: {
+        status: TaskStatusEnum.IN_MODERATE,
+      },
+      take: 100,
+    });
+    const users_ids = this.getUsersVkIdsFromTasks(tasks);
+    return this.vkService.concatUserObject(tasks, users_ids);
+  }
+
   async createTask(
     user: UserEntity,
     taskType: MaterialTypesEnum,
@@ -41,10 +89,8 @@ export class TasksService {
     };
     return this.tasksRepository.save(data);
   }
-  @Roles(RoleEnum.USER)
   async takeTask(user: UserEntity, taskId: number) {
-    const task = await this.tasksRepository.findOneBy({ id: taskId });
-    if (!task) throw new NotFoundException(HttpMessagesEnum.TASK_NOT_FOUND);
+    const task = await this.getTaskOrException(taskId);
     if (task.status !== TaskStatusEnum.FREE)
       throw new ForbiddenException(HttpMessagesEnum.TASK_ALREADY_IN_WORK);
 
@@ -66,8 +112,7 @@ export class TasksService {
     taskId: number,
     moderated_link: string,
   ) {
-    const task = await this.tasksRepository.findOneBy({ id: taskId });
-    if (!task) throw new NotFoundException(HttpMessagesEnum.TASK_NOT_FOUND);
+    const task = await this.getTaskOrException(taskId);
 
     if (task.status !== TaskStatusEnum.IN_WORK)
       throw new ForbiddenException(
@@ -84,7 +129,20 @@ export class TasksService {
   }
 
   @Roles(RoleEnum.MODERATOR)
-  async moderateTask(user: UserEntity, taskId: number) {}
+  async moderateTask(taskId: number, action: ActionsTaskEnum) {
+    const task = await this.getTaskOrException(taskId);
+
+    switch (action) {
+      case ActionsTaskEnum.APPROVE:
+        task.status = TaskStatusEnum.COMPLETED;
+        break;
+      case ActionsTaskEnum.DELETE:
+        task.status = TaskStatusEnum.FREE;
+        task.moderated_link = '';
+        task.completed_by = null;
+    }
+    return this.tasksRepository.save(task);
+  }
 
   async getTaskOrException(taskId: number) {
     const task = await this.tasksRepository.findOneBy({ id: taskId });

@@ -43,4 +43,10 @@ export class TaskEntity {
   @ManyToMany(() => FileEntity)
   @JoinTable()
   files: FileEntity[];
+
+  @Column({ default: 0 })
+  completed_at: number;
+
+  @Column()
+  created_at: number;
 }

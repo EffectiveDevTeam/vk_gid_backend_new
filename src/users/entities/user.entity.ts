@@ -1,20 +1,12 @@
-import {
-  Entity,
-  Column,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn, PrimaryColumn } from 'typeorm';
 import { RoleEnum } from '@app/core/enums';
 import { DepartmentsEnum } from '../enums';
 import { TaskEntity } from 'src/tasks/entities';
+import { FileEntity } from 'src/storage/entities';
 
 @Entity('users')
 export class UserEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ unique: true })
+  @PrimaryColumn({ unique: true })
   vk_id: number;
 
   @Column()
@@ -22,6 +14,9 @@ export class UserEntity {
 
   @Column()
   last_seen: number;
+
+  @Column({ default: 0 })
+  balance: number;
 
   @OneToMany(() => TaskEntity, (task) => task.author)
   created_tasks: TaskEntity[];
@@ -39,7 +34,7 @@ export class UserEntity {
   })
   department: DepartmentsEnum;
 
-  @OneToMany(() => FileEntity, (file) => file.owner)
+  @OneToMany(() => FileEntity, (file) => file.uploaded_by)
   @JoinColumn()
-  files: FileEntity[];
+  uploaded_files: FileEntity[];
 }

@@ -1,5 +1,5 @@
-import { Roles, PublicAccessDecorator, User } from '@app/core/decorators';
-import { HttpMessagesEnum, RoleEnum, allowedFileTypesType } from '@app/core/enums';
+import { PublicAccessDecorator, User } from '@app/core/decorators';
+import { HttpMessagesEnum, allowedFileTypesType } from '@app/core/enums';
 import {
   Controller,
   Delete,
@@ -101,7 +101,7 @@ export class StorageController {
       where: { id: +fileId },
     });
     if (!fileInfo) throw new NotFoundException('Файл не найден');
-    if (fileInfo.uploaded_by.id !== user.id)
+    if (fileInfo.uploaded_by.vk_id !== user.vk_id)
       throw new ForbiddenException(HttpMessagesEnum.FORBIDDEN_OBJECT);
 
     return await this.storageService.delete(fileInfo.id);

@@ -13,9 +13,9 @@ export class CreateTaskDto {
   text: string;
 
   @ApiProperty({ description: 'Прикрепляемые файлы' })
-  @IsArray({ message: 'Ошибка массива | filesIds' })
+  @IsArray({ message: 'Ошибка массива | filesHash' })
   @Length(1, 10, {
     message: 'Прикрепите хотя бы один файл или не больше 10 | filesIds',
   })
-  filesIds: number[];
+  filesHash: string[];
 }

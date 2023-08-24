@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { UsersFieldsEnum, VKMethodsEnum } from './enums';
 import { ConfigService } from '@nestjs/config';
 
+export type ConcatUsersType<T> = {
+  response: T;
+  users_info: object[];
+};
+
 @Injectable()
 export class VKService {
   constructor(private configService: ConfigService) {}
@@ -40,14 +45,14 @@ export class VKService {
     const usersInfo = await this.request(VKMethodsEnum.USERS_GET, data);
     return usersInfo;
   }
-  async concatUserObject(
-    response: object,
+  async concatUserObject<T = object>(
+    response: T,
     user_ids: number[],
-    fields: UsersFieldsEnum[],
-  ) {
+    fields?: UsersFieldsEnum[],
+  ): Promise<ConcatUsersType<T>> {
     return {
-      ...response,
-      users_info: this.usersGet(user_ids, this.concatFields(fields)),
+      response,
+      users_info: await this.usersGet(user_ids, this.concatFields(fields)),
     };
   }
 

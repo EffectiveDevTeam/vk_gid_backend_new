@@ -4,7 +4,7 @@ import { Roles, User } from '@app/core';
 import { RoleEnum } from '@app/core/enums';
 import { UsersService } from 'src/users/users.service';
 import { ChangeUserRoleDto } from 'src/users/dto';
-import { UserEntity } from '@prisma/client';
+import { UserEntity } from './entities';
 
 @ApiBearerAuth()
 @ApiTags('Пользователи')

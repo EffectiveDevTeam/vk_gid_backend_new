@@ -65,6 +65,9 @@ export class StorageService {
     buffer: Buffer,
     mimeType: allowedFileTypesType,
   ): Promise<FileEntity> {
+    const hash = await hasha.async(buffer, { algorithm: 'md5' });
+    const existFile = await this.filesRepository.findOneBy({ hash });
+    if (existFile) return existFile;
     try {
       const inputData = {
         Bucket: this.bucket,
@@ -75,14 +78,14 @@ export class StorageService {
       const count = await this.filesRepository
         .createQueryBuilder('files')
         .select('COUNT(*)', 'count')
-        .where('files.uploaded_by = :user', { user: user.id })
+        .where('files.uploaded_by = :user', { user: user.vk_id })
         .getRawOne();
       if (count > +this.configService.get('S3_FILE_LIMIT_PER_USER_MONTH')) {
         const oldNotSavedFile = await this.filesRepository.findOne({
           where: {
             saved: false,
             uploaded_by: {
-              id: user.id,
+              vk_id: user.vk_id,
             },
           },
           order: {
@@ -97,10 +100,10 @@ export class StorageService {
       await this.s3.send(new PutObjectCommand(inputData));
       this.logger.log(`saved ${path}`);
       return await this.filesRepository.save({
-        owner: user,
+        uploaded_by: user,
         path,
         created_at: getTime(),
-        hash: await hasha.async(buffer, { algorithm: 'md5' }),
+        hash: hash,
         mimeType,
       });
     } catch (error) {
@@ -113,13 +116,15 @@ export class StorageService {
 
   async save(user: UserEntity, hash: string): Promise<FileEntity> {
     const fileInfo = await this.filesRepository.findOneBy({
-      saved: false,
       hash,
     });
     if (!fileInfo) throw new NotFoundException('Файл не найден');
-    fileInfo.uploaded_by = user;
-    fileInfo.saved = true;
-    return this.filesRepository.save(fileInfo);
+    if (!fileInfo.saved) {
+      fileInfo.uploaded_by = user;
+      fileInfo.saved = true;
+      return this.filesRepository.save(fileInfo);
+    }
+    return fileInfo;
   }
 
   async has(path: string): Promise<boolean> {
