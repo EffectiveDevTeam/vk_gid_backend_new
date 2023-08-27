@@ -14,6 +14,6 @@ import { FileEntity } from './entities';
   ],
   controllers: [StorageController],
   providers: [StorageService],
-  exports: [StorageService, ConfigModule],
+  exports: [StorageService],
 })
 export class StorageModule {}

@@ -12,4 +12,10 @@ export const allowedFileTypes = {
   ...ImageTypesEnum,
 };
 
-export type allowedFileTypesType = DocumentTypesEnum | ImageTypesEnum;
+export enum allowedFileTypesType {
+  JPG = 'image/jpg',
+  JPEG = 'image/jpeg',
+  PNG = 'image/png',
+  WEBP = 'image/webp',
+  DOC = 'document',
+}

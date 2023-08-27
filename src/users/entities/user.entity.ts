@@ -9,10 +9,10 @@ export class UserEntity {
   @PrimaryColumn({ unique: true })
   vk_id: number;
 
-  @Column()
+  @Column({ default: 0 })
   registred: number;
 
-  @Column()
+  @Column({ default: 0 })
   last_seen: number;
 
   @Column({ default: 0 })

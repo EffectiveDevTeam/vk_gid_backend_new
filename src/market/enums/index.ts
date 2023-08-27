@@ -1,1 +1,3 @@
-export * from './colors-background-avatar.enum';
+export * from './moneyOperations.enum';
+export * from './productType.enum';
+export * from './products.enum';

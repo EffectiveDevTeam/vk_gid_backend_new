@@ -3,10 +3,11 @@ import { UsersController } from 'src/users/users.controller';
 import { UsersService } from 'src/users/users.service';
 import { ConfigModule } from '@nestjs/config';
 import { VKModule } from '@app/vk';
-import { PrismaModule } from '@app/prisma';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from './entities';
 
 @Module({
-  imports: [ConfigModule, VKModule, PrismaModule],
+  imports: [ConfigModule, VKModule, TypeOrmModule.forFeature([UserEntity])],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [],

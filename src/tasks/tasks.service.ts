@@ -10,18 +10,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, LessThan, Repository } from 'typeorm';
 import { TaskEntity } from './entities';
 import { ActionsTaskEnum, MaterialTypesEnum, TaskStatusEnum } from './enums';
-import { FileEntity } from 'src/storage/entities';
 import { HttpMessagesEnum, RoleEnum, Roles } from '@app/core';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly configService: ConfigService,
     private vkService: VKService,
+    private storageService: StorageService,
     @InjectRepository(TaskEntity)
     private readonly tasksRepository: Repository<TaskEntity>,
-    @InjectRepository(FileEntity)
-    private readonly filesRepository: Repository<FileEntity>,
   ) {}
 
   getUsersVkIdsFromTasks(tasks: TaskEntity[]): number[] {
@@ -79,8 +78,10 @@ export class TasksService {
     text: string,
     filesHash: string[],
   ) {
-    const files = await this.filesRepository.findBy({ hash: In(filesHash) });
-    await this.filesRepository.update({ hash: In(filesHash) }, { saved: true });
+    const files = await this.storageService.getFilesByHash(filesHash);
+    for (const file of files) {
+      await this.storageService.save(user, file.hash);
+    }
     const data = {
       material_type: taskType,
       text,

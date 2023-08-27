@@ -2,20 +2,27 @@ import { UserEntity } from 'src/users/entities';
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MoneyOperationsEnum } from '../enums/moneyOperations.enum';
 import { ProductsEnum } from '../enums/products.enum';
+import { ProductTypeEnum } from '../enums';
 
 @Entity('market_logs')
 export class MarketLogEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.id, { cascade: true })
+  @ManyToOne(() => UserEntity, (user) => user.vk_id, { cascade: true })
   user: UserEntity;
 
-  @Column()
+  @Column({
+    type: 'enum',
+    enum: ProductsEnum,
+  })
   product: ProductsEnum;
 
-  @Column()
-  product_type: ProductsEnum;
+  @Column({
+    type: 'enum',
+    enum: ProductTypeEnum,
+  })
+  product_type: ProductTypeEnum;
 
   @Column({ type: 'enum', enum: MoneyOperationsEnum })
   operation: MoneyOperationsEnum;

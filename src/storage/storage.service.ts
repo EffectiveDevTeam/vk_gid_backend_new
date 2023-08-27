@@ -18,7 +18,7 @@ import {
   ListObjectsCommandOutput,
 } from '@aws-sdk/client-s3';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { FileEntity } from './entities';
 import { UserEntity } from 'src/users/entities';
 import { getTime } from '@app/utils';
@@ -173,5 +173,9 @@ export class StorageService {
       this.logger.error(error);
       throw new BadGatewayException(err);
     }
+  }
+
+  async getFilesByHash(hashes: string[]): Promise<FileEntity[]> {
+    return await this.filesRepository.findBy({ hash: In(hashes) });
   }
 }

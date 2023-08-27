@@ -19,7 +19,10 @@ export class FileEntity {
   @Column()
   created_at: number;
 
-  @Column()
+  @Column({
+    type: 'enum',
+    enum: allowedFileTypesType,
+  })
   mimeType: allowedFileTypesType;
 
   @Column({ default: false })

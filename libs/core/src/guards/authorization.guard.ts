@@ -12,7 +12,7 @@ import { parse, stringify } from 'querystring';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@app/core/decorators';
 import { getTime } from '@app/utils';
-import { PrismaService } from '@app/prisma';
+import { UserEntity } from 'src/users/entities';
 
 const TOKEN_LIFETIME = 12 * 60 * 60 * 1000;
 
@@ -21,7 +21,8 @@ export class AuthorizationGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
     private readonly reflector: Reflector,
-    private prisma: PrismaService,
+    @InjectRepository(UserEntity)
+    private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
   private secret = this.configService.get<string>('VK_SECRET');
@@ -44,7 +45,7 @@ export class AuthorizationGuard implements CanActivate {
     }
 
     const data = parse(token);
-    const vk_user_id = Number.parseInt(data.vk_user_id as string);
+    const vk_id = Number.parseInt(data.vk_user_id as string);
     const sign = data.sign as string;
 
     const signParams = {};
@@ -73,17 +74,29 @@ export class AuthorizationGuard implements CanActivate {
     //   throw new UnauthorizedException('Токен просрочен');
     // }
 
-    const user = await this.prisma.userEntity.upsert({
-      where: {
-        vk_id: vk_user_id,
-      },
-      update: {
-        last_seen: getTime(),
-      },
-      create: {
-        vk_id: vk_user_id,
+    let user = await this.usersRepository.findOneBy({ vk_id });
+    const currentTime = getTime();
+    if (!user) {
+      await this.usersRepository
+        .createQueryBuilder('users')
+        .insert()
+        .into(UserEntity)
+        .values({ vk_id, registred: currentTime, last_seen: currentTime })
+        .orIgnore()
+        .execute();
+    } else {
+      await this.usersRepository.save({ vk_id, last_seen: currentTime });
+    }
+
+    user = await this.usersRepository.findOne({
+      where: { vk_id },
+      relations: {
+        // achievements: {
+        //   achievement_data: true,
+        // },
       },
     });
+
     request.user = user;
 
     return true;

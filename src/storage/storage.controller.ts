@@ -21,12 +21,14 @@ import { UserEntity } from 'src/users/entities';
 import { Repository } from 'typeorm';
 import { FileEntity } from './entities';
 import { allowedFileTypes } from '@app/core/enums';
+import { ConfigService } from '@nestjs/config';
 
 @ApiBearerAuth()
 @ApiTags('Файловое хранилище')
 @Controller('storage')
 export class StorageController {
   constructor(
+    private readonly configService: ConfigService,
     private readonly storageService: StorageService,
     @InjectRepository(FileEntity)
     private readonly filesRepository: Repository<FileEntity>,
@@ -57,11 +59,7 @@ export class StorageController {
     FileInterceptor('file', {
       limits: { fileSize: 5 * 1024 * 1024 },
       fileFilter: (req, file, cb) => {
-        if (
-          !Object.values(allowedFileTypes).includes(
-            file.mimetype as allowedFileTypesType,
-          )
-        ) {
+        if (!Object.values(allowedFileTypes).includes(file.mimetype as any)) {
           cb(
             new ForbiddenException(
               'Этот тип файлов не поддерживается для загрузки',
@@ -77,11 +75,12 @@ export class StorageController {
     @User() user: UserEntity,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<FileEntity> {
+    const path_s3 = this.configService.get('S3_STORAGE_PATH');
     const ext = file.originalname.split('.').at(-1);
     const filename = `${await hasha.async(file.originalname, {
       algorithm: 'md5',
     })}.${ext}`;
-    const path = `userFiles/${filename}`;
+    const path = `${path_s3}/userFiles/${filename}`;
     return await this.storageService.upload(
       user,
       path,

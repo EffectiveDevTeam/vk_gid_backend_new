@@ -21,6 +21,15 @@ export class MarketService {
     private readonly marketLogRepository: Repository<MarketLogEntity>,
   ) {}
 
+  async getPrices() {
+    const prices = {};
+
+    for (const i of Object.keys(ProductsEnum)) {
+      console.log(ProductsEnum);
+    }
+    return prices;
+  }
+
   async marketLogger(
     user: UserEntity,
     product: ProductsEnum,
