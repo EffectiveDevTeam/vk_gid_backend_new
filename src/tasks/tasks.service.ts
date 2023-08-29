@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { ConcatUsersType, VKService } from '@app/vk';
 import { UserEntity } from 'src/users/entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, LessThan, Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { TaskEntity } from './entities';
 import { ActionsTaskEnum, MaterialTypesEnum, TaskStatusEnum } from './enums';
 import { HttpMessagesEnum, RoleEnum, Roles } from '@app/core';

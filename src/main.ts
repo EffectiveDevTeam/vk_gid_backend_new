@@ -23,8 +23,8 @@ async function bootstrap() {
     app.enableCors();
   }
   const swaggerOptions = new DocumentBuilder()
-    .setTitle('CRM NEW PEOPLE API')
-    .setDescription('API CRM NEW PEOPLE')
+    .setTitle('VK GID NEW API')
+    .setDescription('API VK GID NEW')
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();

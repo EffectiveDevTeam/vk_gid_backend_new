@@ -1,5 +1,9 @@
-import { PublicAccessDecorator, User } from '@app/core/decorators';
-import { HttpMessagesEnum, allowedFileTypesType } from '@app/core/enums';
+import { PublicAccessDecorator, Roles, User } from '@app/core/decorators';
+import {
+  HttpMessagesEnum,
+  RoleEnum,
+  allowedFileTypesType,
+} from '@app/core/enums';
 import {
   Controller,
   Delete,
@@ -71,6 +75,7 @@ export class StorageController {
     }),
   )
   @ApiOperation({ summary: 'Загрузить файл в хранилище' })
+  @Roles(RoleEnum.MODERATOR)
   async upload(
     @User() user: UserEntity,
     @UploadedFile() file: Express.Multer.File,
@@ -91,6 +96,7 @@ export class StorageController {
 
   @Delete(':fileId')
   @ApiOperation({ summary: 'Удалить файл из хранилища' })
+  @Roles(RoleEnum.ADMIN)
   async delete(
     @User() user: UserEntity,
     @Param('fileId') fileId: string,

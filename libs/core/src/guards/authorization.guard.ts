@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as crypto from 'crypto';
+import { createHmac } from 'crypto';
 import { parse, stringify } from 'querystring';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '@app/core/decorators';
@@ -55,8 +55,7 @@ export class AuthorizationGuard implements CanActivate {
 
     const stringParams = stringify(signParams);
 
-    const signHash = crypto
-      .createHmac('sha256', this.secret)
+    const signHash = createHmac('sha256', this.secret)
       .update(stringParams)
       .digest('base64')
       .replace(/\+/g, '-')

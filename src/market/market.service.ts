@@ -1,31 +1,41 @@
-import { Injectable, PreconditionFailedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  PreconditionFailedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RoleEnum } from '@app/core/enums';
+import { HttpMessagesEnum, RoleEnum } from '@app/core/enums';
 import { UserEntity } from 'src/users/entities';
 import { ConfigService } from '@nestjs/config';
-import { StorageService } from 'src/storage/storage.service';
 import { getTime } from '@app/utils';
 import { ProductsEnum } from './enums/products.enum';
 import { MoneyOperationsEnum } from './enums/moneyOperations.enum';
-import { MarketLogEntity } from './entities';
+import { MarketLogEntity, PromocodeEntity } from './entities';
 
 @Injectable()
 export class MarketService {
+  readonly MARKET_PREFIX = this.configService.get('MARKET_PREFIX');
   constructor(
     private readonly configService: ConfigService,
-    private readonly storageService: StorageService,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(MarketLogEntity)
     private readonly marketLogRepository: Repository<MarketLogEntity>,
+    @InjectRepository(PromocodeEntity)
+    private readonly promocodeRepository: Repository<PromocodeEntity>,
   ) {}
 
   async getPrices() {
     const prices = {};
 
     for (const i of Object.keys(ProductsEnum)) {
-      console.log(ProductsEnum);
+      const price = this.configService.get(this.MARKET_PREFIX + i);
+      if (price) {
+        prices[i] = +price;
+      } else {
+        prices[i] = -1;
+      }
     }
     return prices;
   }
@@ -70,5 +80,43 @@ export class MarketService {
       { balance: money },
     );
     return money;
+  }
+
+  async addPromo(
+    user: UserEntity,
+    promocode: string,
+    productType: ProductsEnum,
+  ) {
+    const exist_promo = await this.promocodeRepository.findOneBy({ promocode });
+    if (exist_promo)
+      throw new ConflictException(HttpMessagesEnum.MARKET_EXISTS);
+
+    const data = {
+      added_by: user,
+      type: productType,
+      promocode,
+      created_at: getTime(),
+    };
+
+    return this.promocodeRepository.save(data);
+  }
+
+  async buyPromo(giveTo: UserEntity, productType: ProductsEnum) {
+    const product = await this.promocodeRepository.findOneBy({
+      type: productType,
+      activated_at: 0,
+    });
+
+    const cost = this.configService.get(this.MARKET_PREFIX + productType);
+
+    product.activated_at = getTime();
+    product.activated_by = giveTo;
+    await this.promocodeRepository.save(product);
+    await this.marketLogger(
+      giveTo,
+      productType,
+      MoneyOperationsEnum.SUBSTRACTION,
+      cost,
+    );
   }
 }

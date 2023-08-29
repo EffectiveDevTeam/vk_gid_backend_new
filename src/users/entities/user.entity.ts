@@ -3,6 +3,7 @@ import { RoleEnum } from '@app/core/enums';
 import { DepartmentsEnum } from '../enums';
 import { TaskEntity } from 'src/tasks/entities';
 import { FileEntity } from 'src/storage/entities';
+import { MarketLogEntity, PromocodeEntity } from 'src/market/entities';
 
 @Entity('users')
 export class UserEntity {
@@ -37,4 +38,16 @@ export class UserEntity {
   @OneToMany(() => FileEntity, (file) => file.uploaded_by)
   @JoinColumn()
   uploaded_files: FileEntity[];
+
+  @OneToMany(() => MarketLogEntity, (logs) => logs.user)
+  @JoinColumn()
+  market_operations: MarketLogEntity[];
+
+  @OneToMany(() => PromocodeEntity, (logs) => logs.added_by)
+  @JoinColumn()
+  added_promocodes: PromocodeEntity[];
+
+  @OneToMany(() => PromocodeEntity, (logs) => logs.activated_by)
+  @JoinColumn()
+  activated_promocodes: PromocodeEntity[];
 }

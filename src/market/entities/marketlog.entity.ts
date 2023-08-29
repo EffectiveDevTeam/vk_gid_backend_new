@@ -9,7 +9,9 @@ export class MarketLogEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.vk_id, { cascade: true })
+  @ManyToOne(() => UserEntity, (user) => user.market_operations, {
+    cascade: true,
+  })
   user: UserEntity;
 
   @Column({

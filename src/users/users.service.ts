@@ -84,4 +84,8 @@ export class UsersService implements OnApplicationBootstrap {
       UsersFieldsEnum.PHOTO_200,
     ]);
   }
+
+  async addNewMember() {
+    console.log();
+  }
 }

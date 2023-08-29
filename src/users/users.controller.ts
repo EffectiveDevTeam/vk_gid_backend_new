@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles, User } from '@app/core';
 import { RoleEnum } from '@app/core/enums';
@@ -23,14 +23,23 @@ export class UsersController {
   }
 
   @Get('getSelf')
+  @Roles(RoleEnum.USER)
   @ApiOperation({ summary: 'Получить информацию о себе' })
   async getSelf(@User() user: UserEntity) {
     return this.usersService.getSelf(user);
   }
 
   @Get('getTeam')
+  @Roles(RoleEnum.USER)
   @ApiOperation({ summary: 'Получить информацию о редакторах сообщества' })
   async getStaff() {
     return this.usersService.getTeam();
+  }
+
+  @Post('addNewMember')
+  @Roles(RoleEnum.USER)
+  @ApiOperation({ summary: 'Получить информацию о редакторах сообщества' })
+  async addNewMember() {
+    return this.usersService.addNewMember();
   }
 }

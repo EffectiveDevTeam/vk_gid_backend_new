@@ -1,2 +1,2 @@
-export * from './create-custom-avatar.dto';
-export * from './set-nickname';
+export * from './addPromocode.dto';
+export * from './buyPromo.dto';
