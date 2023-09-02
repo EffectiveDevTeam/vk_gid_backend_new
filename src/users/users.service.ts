@@ -74,6 +74,7 @@ export class UsersService implements OnApplicationBootstrap {
     const staff = await this.usersRepository.find({
       where: { role: MoreThanOrEqual(RoleEnum.MODERATOR) },
     });
+    console.log(staff);
     const sorted_staff = {};
     for (const i of staff) {
       if (i.department in sorted_staff) sorted_staff[i.department] = [];

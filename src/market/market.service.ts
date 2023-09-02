@@ -119,4 +119,16 @@ export class MarketService {
       cost,
     );
   }
+
+  async getHistory(user: UserEntity) {
+    const history = await this.marketLogRepository.find({
+      where: {
+        user,
+      },
+      order: {
+        operation_at: 'DESC',
+      },
+    });
+    return history;
+  }
 }

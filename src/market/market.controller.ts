@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MarketService } from './market.service';
-import { ConfigService } from '@nestjs/config';
 import { RoleEnum, Roles, User } from '@app/core';
 import { UserEntity } from 'src/users/entities';
 import { AddPromocodeDto, BuyPromocodeDto } from './dto';
@@ -10,10 +9,14 @@ import { AddPromocodeDto, BuyPromocodeDto } from './dto';
 @ApiTags('Маркет')
 @Controller('market')
 export class MarketController {
-  constructor(
-    private readonly marketService: MarketService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly marketService: MarketService) {}
+
+  @Get('getHistory')
+  @Roles(RoleEnum.USER)
+  @ApiOperation({ summary: 'Получить историю трат' })
+  async getHistory(@User() user: UserEntity) {
+    return this.marketService.getHistory(user);
+  }
 
   @Get('getPrices')
   @Roles(RoleEnum.USER)
@@ -23,7 +26,7 @@ export class MarketController {
   }
 
   @Post('addPromo')
-  @ApiOperation({ summary: 'Получить актуальные цены на товары' })
+  @ApiOperation({ summary: 'Добавить новый промокод' })
   @Roles(RoleEnum.MODERATOR)
   async addPromo(@User() user: UserEntity, @Body() body: AddPromocodeDto) {
     const { promocode, productType } = body;
