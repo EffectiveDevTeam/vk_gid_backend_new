@@ -38,5 +38,4 @@ $ yarn test
 ```
 
 ## Stay in touch
-- Author - [Ilya Mixaltik](https://ilyamixaltik.github.io/resume/)
 - Website - [https://deeptrix.art](https://deeptrix.art/)

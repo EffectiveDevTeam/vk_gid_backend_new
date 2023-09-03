@@ -25,7 +25,7 @@ export class UserEntity {
   @OneToMany(() => TaskEntity, (task) => task.completed_by)
   completed_tasks: TaskEntity[];
 
-  @Column({ type: 'enum', enum: RoleEnum, default: RoleEnum.GUEST })
+  @Column({ type: 'int', enum: RoleEnum, default: RoleEnum.GUEST })
   role: RoleEnum;
 
   @Column({

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { UsersFieldsEnum, VKMethodsEnum } from './enums';
 import { ConfigService } from '@nestjs/config';
 
@@ -14,12 +14,13 @@ export class VKService {
   readonly API_VK_URL = this.configService.get('API_VK_URL');
   readonly VK_USER_TOKEN = this.configService.get('VK_USER_TOKEN');
   readonly VK_COMMUNITY_TOKEN = this.configService.get('VK_COMMUNITY_TOKEN');
+  readonly VK_MINIAPP_TOKEN = this.configService.get('VK_MINIAPP_TOKEN');
   readonly API_VK_VERSION = this.configService.get('API_VK_VERSION');
 
   async request(
     method: VKMethodsEnum,
     json: object,
-    token = this.VK_COMMUNITY_TOKEN,
+    token = this.VK_MINIAPP_TOKEN,
   ) {
     const formData = new FormData();
     for (const key in json) {
@@ -35,15 +36,16 @@ export class VKService {
         body: formData,
       })
     ).json();
+    if ('error' in result) throw new BadRequestException(result);
     return result;
   }
   async usersGet(user_ids: number[], fields: string): Promise<object[]> {
     const data = {
       fields,
-      user_ids,
+      user_ids: user_ids.join(','),
     };
     const usersInfo = await this.request(VKMethodsEnum.USERS_GET, data);
-    return usersInfo;
+    return usersInfo.response;
   }
   async concatUserObject<T = object>(
     response: T,
