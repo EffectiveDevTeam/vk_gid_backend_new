@@ -4,10 +4,22 @@ import { UsersService } from 'src/users/users.service';
 import { ConfigModule } from '@nestjs/config';
 import { VKModule } from '@app/vk';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './entities';
+import {
+  DirectionsEntity,
+  DirectionsSelectedEntity,
+  UserEntity,
+} from './entities';
 
 @Module({
-  imports: [ConfigModule, VKModule, TypeOrmModule.forFeature([UserEntity])],
+  imports: [
+    ConfigModule,
+    VKModule,
+    TypeOrmModule.forFeature([
+      UserEntity,
+      DirectionsEntity,
+      DirectionsSelectedEntity,
+    ]),
+  ],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [],

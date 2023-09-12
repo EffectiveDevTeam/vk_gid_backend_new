@@ -4,6 +4,7 @@ import { DepartmentsEnum } from '../enums';
 import { TaskEntity } from 'src/tasks/entities';
 import { FileEntity } from 'src/storage/entities';
 import { MarketLogEntity, PromocodeEntity } from 'src/market/entities';
+import { DirectionsSelectedEntity } from './directionsUser.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -50,4 +51,7 @@ export class UserEntity {
   @OneToMany(() => PromocodeEntity, (logs) => logs.activated_by)
   @JoinColumn()
   activated_promocodes: PromocodeEntity[];
+
+  @OneToMany(() => DirectionsSelectedEntity, (direction) => direction.user)
+  selected_directions: DirectionsSelectedEntity[];
 }

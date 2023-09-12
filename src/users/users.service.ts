@@ -6,11 +6,13 @@ import {
 } from '@nestjs/common';
 import { RoleEnum } from '@app/core/enums';
 import { ConfigService } from '@nestjs/config';
-import { VKService } from '@app/vk';
+import { ConcatUsersType, VKService } from '@app/vk';
 import { UsersFieldsEnum } from '@app/vk/enums';
-import { UserEntity } from './entities';
+import { DirectionsEntity, UserEntity } from './entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
+import { DirectionsEnum } from './enums/directions.enum';
+import { convertEnumToArray } from '@app/utils';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -19,10 +21,13 @@ export class UsersService implements OnApplicationBootstrap {
     private vkService: VKService,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(DirectionsEntity)
+    private readonly directionsRepository: Repository<DirectionsEntity>,
   ) {}
 
   async onApplicationBootstrap() {
     await this.seedAdmins();
+    await this.seedDirections();
   }
 
   async seedAdmins() {
@@ -36,6 +41,17 @@ export class UsersService implements OnApplicationBootstrap {
         await this.usersRepository.save({
           vk_id,
           role: RoleEnum.ADMIN,
+        });
+      }),
+    );
+  }
+
+  async seedDirections() {
+    const directions = convertEnumToArray(DirectionsEnum);
+    await Promise.all(
+      directions.map(async (direction) => {
+        await this.directionsRepository.save({
+          key: direction,
         });
       }),
     );
@@ -66,8 +82,12 @@ export class UsersService implements OnApplicationBootstrap {
     return await this.usersRepository.save(user);
   }
 
-  async getSelf(user: UserEntity): Promise<UserEntity> {
-    return user;
+  async getSelf(user: UserEntity): Promise<ConcatUsersType<UserEntity>> {
+    return this.vkService.concatUserObject<UserEntity>(
+      user,
+      [user.vk_id],
+      [UsersFieldsEnum.PHOTO_200],
+    );
   }
 
   async getTeam() {
@@ -86,6 +106,10 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   async addNewMember() {
+    console.log();
+  }
+
+  async saveDirectionsUser() {
     console.log();
   }
 }

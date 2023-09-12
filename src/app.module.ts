@@ -23,7 +23,7 @@ import { MarketModule } from './market/market.module';
       database: process.env.PG_DATABASE,
       synchronize: true,
       autoLoadEntities: true,
-      logging: true,
+      // logging: true,
     }),
     TypeOrmModule.forFeature([UserEntity]),
     StorageModule,

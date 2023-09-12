@@ -3,3 +3,4 @@ export * from './getTime';
 export * from './getPersent';
 export * from './convertUnixToDate';
 export * from './convertTrueFalse';
+export * from './convertEnumToArray';
