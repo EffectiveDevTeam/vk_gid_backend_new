@@ -8,6 +8,7 @@ import { UserEntity } from './users/entities';
 import { TasksModule } from './tasks/tasks.module';
 import { StorageModule } from './storage/storage.module';
 import { MarketModule } from './market/market.module';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 @Module({
   imports: [
@@ -24,6 +25,13 @@ import { MarketModule } from './market/market.module';
       synchronize: true,
       autoLoadEntities: true,
       // logging: true,
+    }),
+    RedisModule.forRoot({
+      config: {
+        host: process.env.REDIS_HOST,
+        port: +process.env.REDIS_PORT,
+        password: process.env.REDIS_PASSWORD,
+      },
     }),
     TypeOrmModule.forFeature([UserEntity]),
     StorageModule,

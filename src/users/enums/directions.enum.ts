@@ -8,4 +8,11 @@ export enum DirectionsEnum {
   VIDEO = 'VIDEO',
   RECORDS = 'RECORDS',
   PLAY = 'PLAY',
+  MINI_APPS = 'MINI_APPS',
+  EDU = 'EDU',
+  COMBO = 'COMBO',
+  STORE = 'STORE',
+  PROTECT = 'PROTECT',
+  PAY = 'PAY',
+  FOR_DEV = 'FOR_DEV',
 }

@@ -42,23 +42,24 @@ export class TasksService {
   }
 
   async getTasks() {
-    const currentTasks = await this.tasksRepository.findBy({
-      status: LessThan(TaskStatusEnum.COMPLETED),
+    const currentTasks = await this.tasksRepository.find({
+      where: {
+        status: LessThan(TaskStatusEnum.COMPLETED),
+      },
+      relations: { author: true },
     });
     const complettedTasks = await this.tasksRepository.find({
       where: {
         status: TaskStatusEnum.COMPLETED,
       },
+      relations: { author: true },
       order: { completed_at: 'DESC' },
       take: 10,
     });
     const allTasks = [...currentTasks, ...complettedTasks];
 
     const users_ids = this.getUsersVkIdsFromTasks(allTasks);
-    return this.vkService.concatUserObject(
-      { currentTasks, complettedTasks },
-      users_ids,
-    );
+    return this.vkService.concatUserObject(allTasks, users_ids);
   }
 
   async getModerationTasks() {

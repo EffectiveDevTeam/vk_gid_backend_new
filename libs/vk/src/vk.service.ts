@@ -1,15 +1,22 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { UsersFieldsEnum, VKMethodsEnum } from './enums';
 import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
 
 export type ConcatUsersType<T> = {
   response: T;
   users_info: object[];
 };
 
+const REDIS_VK_NAMESPACE = 'VK_INFO';
+
 @Injectable()
 export class VKService {
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    @InjectRedis() private readonly redis: Redis,
+  ) {}
 
   readonly API_VK_URL = this.configService.get('API_VK_URL');
   readonly VK_USER_TOKEN = this.configService.get('VK_USER_TOKEN');
@@ -39,12 +46,36 @@ export class VKService {
     if ('error' in result) throw new BadRequestException(result);
     return result;
   }
-  async usersGet(user_ids: number[], fields: string): Promise<object[]> {
+  async usersGet(userIds: number[], fields: string): Promise<object[]> {
+    const userInfo = [];
+    let infoFromRedis = true;
+    for (const user_id of userIds) {
+      const redisData = JSON.parse(
+        await this.redis.get(REDIS_VK_NAMESPACE + user_id),
+      );
+      if (!redisData) {
+        infoFromRedis = false;
+        break;
+      }
+      userInfo.push(redisData);
+    }
+    if (infoFromRedis) {
+      return userInfo;
+    }
     const data = {
       fields,
-      user_ids: user_ids.join(','),
+      user_ids: userIds.join(','),
     };
     const usersInfo = await this.request(VKMethodsEnum.USERS_GET, data);
+
+    for (const userData of usersInfo.response) {
+      await this.redis.set(
+        REDIS_VK_NAMESPACE + userData.id,
+        JSON.stringify(userData),
+        'EX',
+        3600,
+      );
+    }
     return usersInfo.response;
   }
   async concatUserObject<T = object>(
@@ -54,7 +85,10 @@ export class VKService {
   ): Promise<ConcatUsersType<T>> {
     return {
       response,
-      users_info: await this.usersGet(user_ids, this.concatFields(fields)),
+      users_info: await this.usersGet(
+        user_ids,
+        this.concatFields(fields ? fields : [UsersFieldsEnum.PHOTO_200]),
+      ),
     };
   }
 

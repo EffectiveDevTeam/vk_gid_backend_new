@@ -2,15 +2,20 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   OnApplicationBootstrap,
 } from '@nestjs/common';
 import { RoleEnum } from '@app/core/enums';
 import { ConfigService } from '@nestjs/config';
 import { ConcatUsersType, VKService } from '@app/vk';
 import { UsersFieldsEnum } from '@app/vk/enums';
-import { DirectionsEntity, UserEntity } from './entities';
+import {
+  DirectionsEntity,
+  DirectionsSelectedEntity,
+  UserEntity,
+} from './entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { DirectionsEnum } from './enums/directions.enum';
 import { convertEnumToArray } from '@app/utils';
 
@@ -23,6 +28,8 @@ export class UsersService implements OnApplicationBootstrap {
     private readonly usersRepository: Repository<UserEntity>,
     @InjectRepository(DirectionsEntity)
     private readonly directionsRepository: Repository<DirectionsEntity>,
+    @InjectRepository(DirectionsSelectedEntity)
+    private readonly directionSelectedRepository: Repository<DirectionsSelectedEntity>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -47,7 +54,7 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   async seedDirections() {
-    const directions = convertEnumToArray(DirectionsEnum);
+    const directions = Object.keys(DirectionsEnum);
     await Promise.all(
       directions.map(async (direction) => {
         await this.directionsRepository.save({
@@ -109,7 +116,25 @@ export class UsersService implements OnApplicationBootstrap {
     console.log();
   }
 
-  async saveDirectionsUser() {
-    console.log();
+  async saveDirectionsUser(user: UserEntity, directions: string[]) {
+    const directionsExists = await this.directionsRepository.find({
+      where: { key: In(directions) },
+    });
+    if (!directionsExists) throw new NotFoundException();
+
+    const savedDirections = await this.directionSelectedRepository.findBy({
+      user,
+    });
+    await this.directionSelectedRepository.remove(savedDirections);
+    const newEntities = [];
+    for (const i of directionsExists) {
+      newEntities.push({ user, direction_info: i });
+    }
+    await this.directionSelectedRepository.save(newEntities);
+
+    return this.directionSelectedRepository.find({
+      relations: { direction_info: true },
+      where: { user },
+    });
   }
 }

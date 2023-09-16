@@ -90,9 +90,9 @@ export class AuthorizationGuard implements CanActivate {
     user = await this.usersRepository.findOne({
       where: { vk_id },
       relations: {
-        // achievements: {
-        //   achievement_data: true,
-        // },
+        selected_directions: {
+          direction_info: true,
+        },
       },
     });
 
