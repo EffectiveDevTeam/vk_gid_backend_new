@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, Length } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
+  IsString,
+  Length,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { MaterialTypesEnum } from '../enums';
 
 export class CreateTaskDto {
@@ -10,12 +19,17 @@ export class CreateTaskDto {
   taskType: MaterialTypesEnum;
 
   @ApiProperty({ description: 'Описание задачи' })
+  @Length(1, 1000, { message: 'Длина описания не более 1000 | text' })
+  @IsString({ message: 'Вы не заполнили описание | text' })
   text: string;
 
   @ApiProperty({ description: 'Прикрепляемые файлы' })
-  @IsArray({ message: 'Ошибка массива | filesHash' })
-  @Length(1, 10, {
-    message: 'Прикрепите хотя бы один файл или не больше 10 | filesIds',
+  @IsArray({ message: 'Вы не прикрепили файлы | filesHash' })
+  @ArrayMaxSize(10, {
+    message: 'Прикрепите  не больше 10 файлов | filesHash',
+  })
+  @ArrayMinSize(1, {
+    message: 'Прикрепите хотя бы один файл | filesHash',
   })
   filesHash: string[];
 }

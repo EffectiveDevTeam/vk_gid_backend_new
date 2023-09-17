@@ -12,6 +12,7 @@ import { TaskEntity } from './entities';
 import { ActionsTaskEnum, MaterialTypesEnum, TaskStatusEnum } from './enums';
 import { HttpMessagesEnum, RoleEnum, Roles } from '@app/core';
 import { StorageService } from 'src/storage/storage.service';
+import { getTime } from '@app/utils';
 
 @Injectable()
 export class TasksService {
@@ -88,6 +89,7 @@ export class TasksService {
       text,
       filesIds: files,
       author: user,
+      created_at: getTime(),
     };
     return this.tasksRepository.save(data);
   }

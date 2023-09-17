@@ -25,6 +25,8 @@ import { getTime } from '@app/utils';
 import * as hasha from 'hasha';
 import { allowedFileTypesType } from '@app/core/enums';
 
+type FullFileInfoType = FileEntity & { bucketPath: string };
+
 @Injectable()
 export class StorageService {
   private readonly s3: S3Client;
@@ -58,16 +60,19 @@ export class StorageService {
     const icons = await this.s3.send(new ListObjectsCommand(input));
     return icons;
   }
+  addBucketPathToResponse(object: FileEntity): FullFileInfoType {
+    return { ...object, bucketPath: this.bucketPath };
+  }
 
   async upload(
     user: UserEntity,
     path: string,
     buffer: Buffer,
     mimeType: allowedFileTypesType,
-  ): Promise<FileEntity> {
+  ): Promise<FullFileInfoType> {
     const hash = await hasha.async(buffer, { algorithm: 'md5' });
     const existFile = await this.filesRepository.findOneBy({ hash });
-    if (existFile) return existFile;
+    if (existFile) return this.addBucketPathToResponse(existFile);
     try {
       const inputData = {
         Bucket: this.bucket,
@@ -99,13 +104,15 @@ export class StorageService {
 
       await this.s3.send(new PutObjectCommand(inputData));
       this.logger.log(`saved ${path}`);
-      return await this.filesRepository.save({
-        uploaded_by: user,
-        path,
-        created_at: getTime(),
-        hash: hash,
-        mimeType,
-      });
+      return this.addBucketPathToResponse(
+        await this.filesRepository.save({
+          uploaded_by: user,
+          path,
+          created_at: getTime(),
+          hash: hash,
+          mimeType,
+        }),
+      );
     } catch (error) {
       const err = `failed to save ${path}`;
       this.logger.error(err);

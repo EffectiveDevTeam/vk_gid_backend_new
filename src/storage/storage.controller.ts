@@ -58,7 +58,7 @@ export class StorageController {
     });
   }
 
-  @Post()
+  @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: 5 * 1024 * 1024 },
@@ -71,6 +71,7 @@ export class StorageController {
             false,
           );
         }
+        cb(null, true);
       },
     }),
   )
@@ -80,6 +81,7 @@ export class StorageController {
     @User() user: UserEntity,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<FileEntity> {
+    console.log('uploading')
     const path_s3 = this.configService.get('S3_STORAGE_PATH');
     const ext = file.originalname.split('.').at(-1);
     const filename = `${await hasha.async(file.originalname, {

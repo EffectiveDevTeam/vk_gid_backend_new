@@ -5,7 +5,6 @@ COPY tsconfig.json ./
 COPY . .
 COPY prisma ./prisma/
 RUN yarn install --immutable
-RUN npx prisma generate
 RUN yarn build
 EXPOSE 4000
 CMD ["yarn", "start:prod"]
