@@ -35,6 +35,7 @@ export class TasksService {
 
   async getTask(taskId: number): Promise<ConcatUsersType<TaskEntity>> {
     const task = await this.getTaskOrException(taskId);
+    console.log(task);
 
     return this.vkService.concatUserObject<TaskEntity>(task, [
       task.author.vk_id,
@@ -149,7 +150,10 @@ export class TasksService {
   }
 
   async getTaskOrException(taskId: number) {
-    const task = await this.tasksRepository.findOneBy({ id: taskId });
+    const task = await this.tasksRepository.findOne({
+      where: { id: taskId },
+      relations: { author: true, completed_by: true, files: true },
+    });
     if (!task) throw new NotFoundException(HttpMessagesEnum.TASK_NOT_FOUND);
     return task;
   }

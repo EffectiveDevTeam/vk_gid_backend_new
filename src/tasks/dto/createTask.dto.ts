@@ -6,8 +6,6 @@ import {
   IsEnum,
   IsString,
   Length,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
 import { MaterialTypesEnum } from '../enums';
 
