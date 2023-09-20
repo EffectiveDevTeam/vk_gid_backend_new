@@ -83,12 +83,13 @@ export class TasksService {
   ) {
     const files = await this.storageService.getFilesByHash(filesHash);
     for (const file of files) {
-      await this.storageService.save(user, file.hash);
+      console.log(await this.storageService.save(user, file.hash));
     }
+    console.log(files);
     const data = {
       material_type: taskType,
       text,
-      filesIds: files,
+      files: files,
       author: user,
       created_at: getTime(),
     };
@@ -155,6 +156,6 @@ export class TasksService {
       relations: { author: true, completed_by: true, files: true },
     });
     if (!task) throw new NotFoundException(HttpMessagesEnum.TASK_NOT_FOUND);
-    return task;
+    return { ...task, bucketPath: this.storageService.bucketPath };
   }
 }

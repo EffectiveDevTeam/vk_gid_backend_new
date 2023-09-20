@@ -63,6 +63,7 @@ export class StorageController {
     FileInterceptor('file', {
       limits: { fileSize: 5 * 1024 * 1024 },
       fileFilter: (req, file, cb) => {
+        if (!file) cb(new NotFoundException('Файл не найден'), false);
         if (!Object.values(allowedFileTypes).includes(file.mimetype as any)) {
           cb(
             new ForbiddenException(
