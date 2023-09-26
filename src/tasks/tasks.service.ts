@@ -95,19 +95,20 @@ export class TasksService {
     };
     return this.tasksRepository.save(data);
   }
-  async takeTask(user: UserEntity, taskId: number) {
+  async takeTask(user: UserEntity, taskId: number): Promise<TaskEntity> {
     const task = await this.getTaskOrException(taskId);
     if (task.status !== TaskStatusEnum.FREE)
       throw new ForbiddenException(HttpMessagesEnum.TASK_ALREADY_IN_WORK);
 
     const currentUserTasksInWork = await this.tasksRepository.findBy({
-      completed_by: user,
+      id: taskId,
       status: TaskStatusEnum.IN_WORK,
     });
     if (!currentUserTasksInWork)
       throw new ForbiddenException(HttpMessagesEnum.TASK_USER_IS_BUSY);
 
     task.status = TaskStatusEnum.IN_WORK;
+    task.completed_by = user;
 
     return this.tasksRepository.save(task);
   }

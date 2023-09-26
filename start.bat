@@ -1,4 +1,4 @@
-start cmd "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+start "Докер" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 cd "D:\MyProjects\vk_gid_backend_new"
 start cmd /k "yarn start:dev"
 start cmd /k "ngrok http 4000"
