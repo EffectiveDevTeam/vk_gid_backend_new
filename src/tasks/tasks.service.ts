@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { TaskEntity } from './entities';
 import { ActionsTaskEnum, MaterialTypesEnum, TaskStatusEnum } from './enums';
-import { HttpMessagesEnum, RoleEnum, Roles } from '@app/core';
+import { HttpMessagesEnum } from '@app/core';
 import { StorageService } from 'src/storage/storage.service';
 import { getTime } from '@app/utils';
 
@@ -35,7 +35,6 @@ export class TasksService {
 
   async getTask(taskId: number): Promise<ConcatUsersType<TaskEntity>> {
     const task = await this.getTaskOrException(taskId);
-    console.log(task);
 
     return this.vkService.concatUserObject<TaskEntity>(task, [
       task.author.vk_id,
@@ -43,18 +42,17 @@ export class TasksService {
     ]);
   }
 
-  async getTasks() {
-    const currentTasks = await this.tasksRepository.find({
-      where: {
-        status: LessThan(TaskStatusEnum.COMPLETED),
-      },
-      relations: { author: true },
+  async getTasks(user: UserEntity, isMy = false) {
+    const currentTasks = await this.tasksRepository.findBy({
+      status: LessThan(TaskStatusEnum.COMPLETED),
+      completed_by: { vk_id: isMy ? user.vk_id : undefined },
     });
     const complettedTasks = await this.tasksRepository.find({
       where: {
         status: TaskStatusEnum.COMPLETED,
+        completed_by: { vk_id: isMy ? user.vk_id : undefined },
       },
-      relations: { author: true },
+      relations: { author: true, completed_by: true },
       order: { completed_at: 'DESC' },
       take: 10,
     });
@@ -70,6 +68,7 @@ export class TasksService {
         status: TaskStatusEnum.IN_MODERATE,
       },
       take: 100,
+      relations: { completed_by: true },
     });
     const users_ids = this.getUsersVkIdsFromTasks(tasks);
     return this.vkService.concatUserObject(tasks, users_ids);
@@ -85,7 +84,6 @@ export class TasksService {
     for (const file of files) {
       console.log(await this.storageService.save(user, file.hash));
     }
-    console.log(files);
     const data = {
       material_type: taskType,
       text,
@@ -101,10 +99,10 @@ export class TasksService {
       throw new ForbiddenException(HttpMessagesEnum.TASK_ALREADY_IN_WORK);
 
     const currentUserTasksInWork = await this.tasksRepository.findBy({
-      id: taskId,
+      completed_by: { vk_id: user.vk_id },
       status: TaskStatusEnum.IN_WORK,
     });
-    if (!currentUserTasksInWork)
+    if (currentUserTasksInWork.length)
       throw new ForbiddenException(HttpMessagesEnum.TASK_USER_IS_BUSY);
 
     task.status = TaskStatusEnum.IN_WORK;
@@ -113,29 +111,27 @@ export class TasksService {
     return this.tasksRepository.save(task);
   }
 
-  @Roles(RoleEnum.USER)
   async sendTaskToModerate(
     user: UserEntity,
     taskId: number,
     moderated_link: string,
-  ) {
+  ): Promise<TaskEntity> {
     const task = await this.getTaskOrException(taskId);
 
     if (task.status !== TaskStatusEnum.IN_WORK)
       throw new ForbiddenException(
         HttpMessagesEnum.TASK_METHOD_UNAVALIBLE_FOR_STATUS,
       );
-
-    if (task.completed_by !== user)
+    if (task.completed_by.vk_id !== user.vk_id)
       throw new ForbiddenException(HttpMessagesEnum.FORBIDDEN_OBJECT);
 
     task.status = TaskStatusEnum.IN_MODERATE;
     task.moderated_link = moderated_link;
+    task.completed_at = getTime();
 
     return this.tasksRepository.save(task);
   }
 
-  @Roles(RoleEnum.MODERATOR)
   async moderateTask(taskId: number, action: ActionsTaskEnum) {
     const task = await this.getTaskOrException(taskId);
 
@@ -147,15 +143,13 @@ export class TasksService {
         task.status = TaskStatusEnum.FREE;
         task.moderated_link = '';
         task.completed_by = null;
+        task.completed_at = 0;
     }
     return this.tasksRepository.save(task);
   }
 
   async getTaskOrException(taskId: number) {
-    const task = await this.tasksRepository.findOne({
-      where: { id: taskId },
-      relations: { author: true, completed_by: true, files: true },
-    });
+    const task = await this.tasksRepository.findOneBy({ id: taskId });
     if (!task) throw new NotFoundException(HttpMessagesEnum.TASK_NOT_FOUND);
     return { ...task, bucketPath: this.storageService.bucketPath };
   }

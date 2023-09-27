@@ -34,13 +34,13 @@ export class TaskEntity {
   @Column()
   text: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.created_tasks)
+  @ManyToOne(() => UserEntity, (user) => user.created_tasks, { eager: true })
   author: UserEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.completed_tasks)
+  @ManyToOne(() => UserEntity, (user) => user.completed_tasks, { eager: true })
   completed_by: UserEntity;
 
-  @ManyToMany(() => FileEntity)
+  @ManyToMany(() => FileEntity, { eager: true })
   @JoinTable()
   files: FileEntity[];
 

@@ -18,11 +18,11 @@ export class TasksController {
     return this.tasksService.getTask(+id);
   }
 
-  @Get('getTasks')
+  @Get('getTasks/:is_my')
   @ApiOperation({ summary: 'Получить инфо о задачах' })
   @Roles(RoleEnum.USER)
-  async getTasks() {
-    return this.tasksService.getTasks();
+  async getTasks(@User() user: UserEntity, @Param('is_my') is_my: string) {
+    return this.tasksService.getTasks(user, Boolean(+is_my));
   }
 
   @Get('getModerationTasks')
