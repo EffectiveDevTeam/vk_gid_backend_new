@@ -55,12 +55,17 @@ export class UsersService implements OnApplicationBootstrap {
 
   async seedDirections() {
     const directions = Object.keys(DirectionsEnum);
+    const existDirections = (await this.directionsRepository.find()).map(
+      (v) => v.key,
+    );
     await Promise.all(
-      directions.map(async (direction) => {
-        await this.directionsRepository.save({
-          key: direction,
-        });
-      }),
+      directions
+        .filter((v) => !existDirections.includes(v))
+        .map(async (direction) => {
+          await this.directionsRepository.save({
+            key: direction,
+          });
+        }),
     );
   }
 

@@ -5,7 +5,7 @@ import { ProductsEnum } from '../enums';
 export class AddPromocodeDto {
   @ApiProperty()
   @IsString()
-  @Matches(/^([a-z0-9]{4})-\1-\1-\1$/iu, {
+  @Matches(/^([a-z0-9]{4})-([a-z0-9]{4})-([a-z0-9]{4})-([a-z0-9]{4})$/iu, {
     message: 'Недопустимый формат промокода',
   })
   promocode: string;

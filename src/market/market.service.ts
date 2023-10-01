@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   PreconditionFailedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,7 @@ import { getTime } from '@app/utils';
 import { ProductsEnum } from './enums/products.enum';
 import { MoneyOperationsEnum } from './enums/moneyOperations.enum';
 import { MarketLogEntity, PromocodeEntity } from './entities';
+import { ProductTypeEnum } from './enums';
 
 @Injectable()
 export class MarketService {
@@ -45,11 +47,13 @@ export class MarketService {
     product: ProductsEnum,
     operation: MoneyOperationsEnum,
     cost: number,
+    product_type = ProductTypeEnum.CLIP,
   ): Promise<MarketLogEntity> {
     return await this.marketLogRepository.save({
       user,
       product,
       operation,
+      product_type,
       cost,
       operation_at: getTime(),
     });
@@ -106,18 +110,22 @@ export class MarketService {
       type: productType,
       activated_at: 0,
     });
+    if (!product)
+      throw new NotFoundException(HttpMessagesEnum.MARKET_PROMO_NOT_FOUND);
 
     const cost = this.configService.get(this.MARKET_PREFIX + productType);
 
     product.activated_at = getTime();
     product.activated_by = giveTo;
-    await this.promocodeRepository.save(product);
+    console.log(product);
+    const promo = await this.promocodeRepository.save(product);
     await this.marketLogger(
       giveTo,
       productType,
       MoneyOperationsEnum.SUBSTRACTION,
       cost,
     );
+    return promo;
   }
 
   async getHistory(user: UserEntity) {

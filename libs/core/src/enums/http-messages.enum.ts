@@ -5,6 +5,7 @@ export enum HttpMessagesEnum {
   TASK_METHOD_UNAVALIBLE_FOR_STATUS = 'Этот метод недоступен для текущего статуса задачи',
 
   MARKET_EXISTS = 'Такой промокод уже добавлен',
+  MARKET_PROMO_NOT_FOUND = 'Извините промокод не найден',
 
   FORBIDDEN_OBJECT = 'Вы не имеете доступа к этому объекту',
   ERROR_TOKEN = 'Токен недействителен',

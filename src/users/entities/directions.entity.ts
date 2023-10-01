@@ -6,7 +6,7 @@ export class DirectionsEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   key: string;
 
   @OneToOne(
