@@ -1,0 +1,4 @@
+export enum HistoryTypeEnum {
+  PROMOCODE = 'PROMOCODE',
+  ADDITION_BALANCE = 'ADDITION_BALANCE',
+}

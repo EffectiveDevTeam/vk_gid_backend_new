@@ -13,7 +13,7 @@ import { getTime } from '@app/utils';
 import { ProductsEnum } from './enums/products.enum';
 import { MoneyOperationsEnum } from './enums/moneyOperations.enum';
 import { MarketLogEntity, PromocodeEntity } from './entities';
-import { ProductTypeEnum } from './enums';
+import { HistoryTypeEnum, ProductTypeEnum } from './enums';
 
 @Injectable()
 export class MarketService {
@@ -117,7 +117,6 @@ export class MarketService {
 
     product.activated_at = getTime();
     product.activated_by = giveTo;
-    console.log(product);
     const promo = await this.promocodeRepository.save(product);
     await this.marketLogger(
       giveTo,
@@ -129,14 +128,31 @@ export class MarketService {
   }
 
   async getHistory(user: UserEntity) {
-    const history = await this.marketLogRepository.find({
-      where: {
-        user,
-      },
-      order: {
-        operation_at: 'DESC',
-      },
-    });
-    return history;
+    // const history = await this.marketLogRepository.find({
+    //   where: {
+    //     user,
+    //   },
+    //   order: {
+    //     operation_at: 'DESC',
+    //   },
+    // });
+    const promocodes = await this.mapPromocodes(
+      await this.promocodeRepository.find({
+        where: {
+          activated_by: { vk_id: user.vk_id },
+        },
+        order: { activated_at: 'DESC' },
+      }),
+    );
+    return [...promocodes];
+  }
+  async mapPromocodes(promocodes: PromocodeEntity[]) {
+    const prices = await this.getPrices();
+    const promocodes_mapped = promocodes.map((promocode) => ({
+      ...promocode,
+      typeHistory: HistoryTypeEnum.PROMOCODE,
+      cost: prices[promocode.type],
+    }));
+    return promocodes_mapped;
   }
 }

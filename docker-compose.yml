@@ -1,34 +1,66 @@
 version: '3.8'
 
 services:
-  # main-svc:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   restart: always
-  #   environment:
-  #     NODE_ENV: ${NODE_ENV:-development}
-  #     MAIN_SVC_PORT: ${MAIN_SVC_PORT:-4000}
+  main-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
 
-  #     PG_HOST: ${PG_HOST:-127.0.0.1}
-  #     PG_DATABASE: ${PG_DATABASE:-database}
-  #     PG_USER: ${PG_USER:-root}
-  #     PG_PASSWORD: ${PG_PASSWORD:-secret}
-  #     PG_PORT: ${PG_PORT:-5432}
+      MAIN_SVC_PORT: ${MAIN_SVC_PORT:-4000}
 
-  #     DATABASE_URL: "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE:-secret}?schema=public"
+      API_VK_URL: ${API_VK_URL}
+      VK_USER_TOKEN: ${VK_USER_TOKEN}
+      VK_COMMUNITY_TOKEN: ${VK_COMMUNITY_TOKEN}
+      API_VK_VERSION: ${API_VK_VERSION}
+      VK_SECRET: ${VK_SECRET}
+      VK_MINIAPP_TOKEN: ${VK_MINIAPP_TOKEN}
 
-  #     JWT_KEY: ${JWT_KEY:-SECRET}
+      PG_HOST: ${PG_HOST:-127.0.0.1}
+      PG_DATABASE: ${PG_DATABASE:-database}
+      PG_USER: ${PG_USER:-root}
+      PG_PASSWORD: ${PG_PASSWORD:-secret}
+      PG_PORT: ${PG_PORT:-5432}
 
-  #     ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
-  #     ADMIN_PASSWORD: ${ADMIN_PASSWORD:-secrEt}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
 
-  #     SWAGGER_THEME: ${SWAGGER_THEME:-dark}
-  #   ports:
-  #     - '${MAIN_SVC_PORT:-4000}:${MAIN_SVC_PORT:-4000}'
-  #   depends_on:
-  #     - db
-  #     - redis
+      DATABASE_URL: "postgresql://${PG_USER}:${PG_PASSWORD}@${PG_HOST}:${PG_PORT}/${PG_DATABASE:-secret}?schema=public"
+
+      JWT_KEY: ${JWT_KEY:-SECRET}
+
+      SWAGGER_THEME: ${SWAGGER_THEME:-dark}
+      ADMIN_USERS: ${ADMIN_USERS}
+
+      S3_HOST: ${S3_HOST}
+      S3_PORT: ${S3_PORT}
+      S3_ROOT_USER: ${S3_ROOT_USER}
+      S3_ROOT_PASSWORD: ${S3_ROOT_PASSWORD}
+      S3_REGION: ${S3_REGION}
+      S3_STORAGE_BUCKET: ${S3_STORAGE_BUCKET}
+      S3_STORAGE_PATH: ${S3_STORAGE_PATH}
+
+      S3_USER_FILES_PATH: ${S3_USER_FILES_PATH}
+      S3_FILE_LIMIT_PER_USER_MONTH: ${S3_FILE_LIMIT_PER_USER_MONTH}
+
+      MARKET_PREFIX: ${MARKET_PREFIX}
+      MARKET_PRICES_VOICES_20: ${MARKET_PRICES_VOICES_20}
+      MARKET_PRICES_VOICES_50: ${MARKET_PRICES_VOICES_50}
+      MARKET_PRICES_VOICES_100: ${MARKET_PRICES_VOICES_100}
+      MARKET_PRICES_VOICES_250: ${MARKET_PRICES_VOICES_250}
+      MARKET_PRICES_MUSIC_1_MONTH: ${MARKET_PRICES_MUSIC_1_MONTH}
+      MARKET_PRICES_MUSIC_3_MONTH: ${MARKET_PRICES_MUSIC_3_MONTH}
+      MARKET_PRICES_MUSIC_6_MONTH: ${MARKET_PRICES_MUSIC_6_MONTH}
+      MARKET_PRICES_MUSIC_12_MONTH: ${MARKET_PRICES_MUSIC_12_MONTH}
+
+    ports:
+      - '${MAIN_SVC_PORT:-4000}:${MAIN_SVC_PORT:-4000}'
+    depends_on:
+      - db
+      - redis
 
   db:
     image: postgres:13.1
