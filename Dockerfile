@@ -1,9 +1,8 @@
-FROM node:16-alpine
+FROM node:18-alpine
 WORKDIR /app
 COPY package.json yarn.lock ./
 COPY tsconfig.json ./
 COPY . .
-COPY prisma ./prisma/
 RUN yarn install --immutable
 RUN yarn build
 EXPOSE 4000

@@ -17,7 +17,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { DirectionsEnum } from './enums/directions.enum';
-import { convertEnumToArray } from '@app/utils';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
