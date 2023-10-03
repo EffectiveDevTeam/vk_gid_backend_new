@@ -52,6 +52,8 @@ export class UserEntity {
   @JoinColumn()
   activated_promocodes: PromocodeEntity[];
 
-  @OneToMany(() => DirectionsSelectedEntity, (direction) => direction.user)
+  @OneToMany(() => DirectionsSelectedEntity, (direction) => direction.user, {
+    eager: true,
+  })
   selected_directions: DirectionsSelectedEntity[];
 }

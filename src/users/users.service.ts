@@ -5,7 +5,7 @@ import {
   NotFoundException,
   OnApplicationBootstrap,
 } from '@nestjs/common';
-import { RoleEnum } from '@app/core/enums';
+import { HttpMessagesEnum, RoleEnum } from '@app/core/enums';
 import { ConfigService } from '@nestjs/config';
 import { ConcatUsersType, VKService } from '@app/vk';
 import { UsersFieldsEnum } from '@app/vk/enums';
@@ -17,6 +17,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { DirectionsEnum } from './enums/directions.enum';
+import { AddNewMemberDto } from './dto';
+import { getTime } from '@app/utils';
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -103,21 +105,27 @@ export class UsersService implements OnApplicationBootstrap {
 
   async getTeam() {
     const staff = await this.usersRepository.find({
-      where: { role: MoreThanOrEqual(RoleEnum.MODERATOR) },
+      where: { role: MoreThanOrEqual(RoleEnum.USER) },
     });
-    const sorted_staff = {};
-    for (const i of staff) {
-      if (!(i.department in sorted_staff)) sorted_staff[i.department] = [];
-      sorted_staff[i.department].push(i);
-    }
     const ids = staff.map((user) => user.vk_id);
-    return this.vkService.concatUserObject<object>(sorted_staff, ids, [
+    return this.vkService.concatUserObject<object>(staff, ids, [
       UsersFieldsEnum.PHOTO_200,
     ]);
   }
 
-  async addNewMember() {
-    console.log();
+  async addNewMember(data: AddNewMemberDto) {
+    const price = +this.configService.get('MARKET_PRICES_VOICES_20');
+    const userScreenName = await this.vkService.resolveUserLink(data.link);
+    if (!userScreenName?.object_id)
+      throw new NotFoundException(HttpMessagesEnum.USERS_NOT_FOUND);
+    return this.usersRepository.save({
+      vk_id: userScreenName.object_id,
+      registred: getTime(),
+      last_seen: getTime(),
+      department: data.department,
+      balance: data.isPromo ? price : 0,
+      role: data.isModer ? RoleEnum.MODERATOR : RoleEnum.USER,
+    });
   }
 
   async saveDirectionsUser(user: UserEntity, directions: string[]) {

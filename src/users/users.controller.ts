@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles, User } from '@app/core';
 import { RoleEnum } from '@app/core/enums';
 import { UsersService } from 'src/users/users.service';
-import { ChangeUserRoleDto, SaveDirectionsDto } from 'src/users/dto';
+import { AddNewMemberDto, ChangeUserRoleDto, SaveDirectionsDto } from 'src/users/dto';
 import { UserEntity } from './entities';
 
 @ApiBearerAuth()
@@ -39,8 +39,8 @@ export class UsersController {
   @Post('addNewMember')
   @Roles(RoleEnum.USER)
   @ApiOperation({ summary: 'Получить информацию о редакторах сообщества' })
-  async addNewMember() {
-    return this.usersService.addNewMember();
+  async addNewMember(@Body() body: AddNewMemberDto) {
+    return this.usersService.addNewMember(body);
   }
 
   @Post('saveDirections')

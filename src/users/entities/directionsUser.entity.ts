@@ -13,7 +13,7 @@ export class DirectionsSelectedEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => DirectionsEntity)
+  @OneToOne(() => DirectionsEntity, { eager: true })
   @JoinColumn()
   direction_info: DirectionsEntity;
 

@@ -78,6 +78,16 @@ export class VKService {
     }
     return usersInfo.response;
   }
+  async resolveUserLink(link: string): Promise<{ object_id: number }> {
+    const data = {
+      screen_name: link,
+    };
+    const userLink = await this.request(
+      VKMethodsEnum.RESOLVE_SCREEN_NAME,
+      data,
+    );
+    return userLink.response;
+  }
   async concatUserObject<T = object>(
     response: T,
     user_ids: number[],
