@@ -5,12 +5,12 @@ concurrency: production
 on:
   push:
     branches:
-      - production
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: Production
+    environment: production
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
           echo $PRODUCTION_ENV | base64 -d > .env.production
           docker context create --docker host=ssh://production production
           docker context use production
-          docker compose --env-file=.env.production up --build -d
+          docker compose --env-file=.env.production -p vk_gid_backend up --build -d
         env:
           PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
 
