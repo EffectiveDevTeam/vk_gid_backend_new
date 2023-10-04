@@ -3,6 +3,7 @@ import { UsersFieldsEnum, VKMethodsEnum } from './enums';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import { WallItem } from './types';
 
 export type ConcatUsersType<T> = {
   response: T;
@@ -100,6 +101,14 @@ export class VKService {
         this.concatFields(fields ? fields : [UsersFieldsEnum.PHOTO_200]),
       ),
     };
+  }
+
+  async getPosts(posts: string[]): Promise<WallItem[]> {
+    const data = {
+      posts,
+    };
+    const postsInfo = await this.request(VKMethodsEnum.WALL_GET_BY_ID, data);
+    return postsInfo.response;
   }
 
   concatFields(fields: UsersFieldsEnum[]): string {

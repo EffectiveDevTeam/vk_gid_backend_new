@@ -3,7 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles, User } from '@app/core';
 import { RoleEnum } from '@app/core/enums';
 import { UsersService } from 'src/users/users.service';
-import { AddNewMemberDto, ChangeUserRoleDto, SaveDirectionsDto } from 'src/users/dto';
+import {
+  AddNewMemberDto,
+  ChangeUserRoleDto,
+  SaveDirectionsDto,
+} from 'src/users/dto';
 import { UserEntity } from './entities';
 
 @ApiBearerAuth()

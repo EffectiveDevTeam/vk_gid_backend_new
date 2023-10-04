@@ -9,6 +9,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { StorageModule } from './storage/storage.module';
 import { MarketModule } from './market/market.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { ParserModule } from './parser/parser.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
     UsersModule,
     TasksModule,
     MarketModule,
+    ParserModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthorizationGuard },

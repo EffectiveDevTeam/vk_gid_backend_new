@@ -49,4 +49,7 @@ export class TaskEntity {
 
   @Column()
   created_at: number;
+
+  @Column({ default: 0 })
+  views_count: number;
 }

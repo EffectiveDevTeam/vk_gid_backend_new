@@ -9,6 +9,7 @@ import {
   DirectionsSelectedEntity,
   UserEntity,
 } from './entities';
+import { TaskEntity } from 'src/tasks/entities';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import {
       UserEntity,
       DirectionsEntity,
       DirectionsSelectedEntity,
+      TaskEntity,
     ]),
   ],
   controllers: [UsersController],

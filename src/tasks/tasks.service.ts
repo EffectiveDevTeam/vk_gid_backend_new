@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ConcatUsersType, VKService } from '@app/vk';
 import { UserEntity } from 'src/users/entities';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,7 +16,6 @@ import { getTime } from '@app/utils';
 @Injectable()
 export class TasksService {
   constructor(
-    private readonly configService: ConfigService,
     private vkService: VKService,
     private storageService: StorageService,
     @InjectRepository(TaskEntity)
@@ -59,7 +57,10 @@ export class TasksService {
     const allTasks = [...currentTasks, ...complettedTasks];
 
     const users_ids = this.getUsersVkIdsFromTasks(allTasks);
-    return this.vkService.concatUserObject(allTasks, users_ids);
+    return this.vkService.concatUserObject(
+      { items: allTasks, bucketPath: this.storageService.bucketPath },
+      users_ids,
+    );
   }
 
   async getModerationTasks() {
@@ -71,7 +72,10 @@ export class TasksService {
       relations: { completed_by: true },
     });
     const users_ids = this.getUsersVkIdsFromTasks(tasks);
-    return this.vkService.concatUserObject(tasks, users_ids);
+    return this.vkService.concatUserObject(
+      { items: tasks, bucketPath: this.storageService.bucketPath },
+      users_ids,
+    );
   }
 
   async createTask(
@@ -138,6 +142,7 @@ export class TasksService {
     switch (action) {
       case ActionsTaskEnum.APPROVE:
         task.status = TaskStatusEnum.COMPLETED;
+        task.completed_at = getTime();
         break;
       case ActionsTaskEnum.DELETE:
         task.status = TaskStatusEnum.FREE;

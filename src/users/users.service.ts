@@ -19,6 +19,15 @@ import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { DirectionsEnum } from './enums/directions.enum';
 import { AddNewMemberDto } from './dto';
 import { getTime } from '@app/utils';
+import { TaskEntity } from 'src/tasks/entities';
+import { TaskStatusEnum } from 'src/tasks/enums';
+
+type AdditionUserInfo = {
+  stat: {
+    publicationsCount: number;
+    viewsCount: number;
+  };
+};
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -31,6 +40,8 @@ export class UsersService implements OnApplicationBootstrap {
     private readonly directionsRepository: Repository<DirectionsEntity>,
     @InjectRepository(DirectionsSelectedEntity)
     private readonly directionSelectedRepository: Repository<DirectionsSelectedEntity>,
+    @InjectRepository(TaskEntity)
+    private readonly tasksRepository: Repository<TaskEntity>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -95,9 +106,22 @@ export class UsersService implements OnApplicationBootstrap {
     return await this.usersRepository.save(user);
   }
 
-  async getSelf(user: UserEntity): Promise<ConcatUsersType<UserEntity>> {
-    return this.vkService.concatUserObject<UserEntity>(
-      user,
+  async getSelf(
+    user: UserEntity,
+  ): Promise<ConcatUsersType<UserEntity & AdditionUserInfo>> {
+    const counters = await this.tasksRepository
+      .createQueryBuilder('tasks')
+      .select('COUNT(*)', 'count')
+      .addSelect('SUM(tasks.views_count)', 'totalViews')
+      .where('tasks.status = :status', { status: TaskStatusEnum.COMPLETED })
+      .getRawOne<{ count: string; totalViews: string }>();
+    const stat = {
+      publicationsCount: +counters.count,
+      viewsCount: +counters.totalViews,
+    };
+    const fullUserInfo = { ...user, stat };
+    return this.vkService.concatUserObject<UserEntity & AdditionUserInfo>(
+      fullUserInfo,
       [user.vk_id],
       [UsersFieldsEnum.PHOTO_200],
     );
