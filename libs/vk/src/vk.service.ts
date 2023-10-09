@@ -47,7 +47,10 @@ export class VKService {
     if ('error' in result) throw new BadRequestException(result);
     return result;
   }
-  async usersGet(userIds: number[], fields: string): Promise<object[]> {
+  async usersGet(
+    userIds: number[],
+    fields: UsersFieldsEnum[],
+  ): Promise<object[]> {
     const userInfo = [];
     let infoFromRedis = true;
     for (const user_id of userIds) {
@@ -64,7 +67,7 @@ export class VKService {
       return userInfo;
     }
     const data = {
-      fields,
+      fields: this.concatFields(fields),
       user_ids: userIds.join(','),
     };
     const usersInfo = await this.request(VKMethodsEnum.USERS_GET, data);
@@ -98,7 +101,7 @@ export class VKService {
       response,
       users_info: await this.usersGet(
         user_ids,
-        this.concatFields(fields ? fields : [UsersFieldsEnum.PHOTO_200]),
+        fields ? fields : [UsersFieldsEnum.PHOTO_200],
       ),
     };
   }
