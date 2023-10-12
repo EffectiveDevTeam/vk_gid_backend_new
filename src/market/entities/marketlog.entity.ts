@@ -2,7 +2,7 @@ import { UserEntity } from 'src/users/entities';
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MoneyOperationsEnum } from '../enums/moneyOperations.enum';
 import { ProductsEnum } from '../enums/products.enum';
-import { ProductTypeEnum } from '../enums';
+import { MaterialTypesEnum } from 'src/tasks/enums';
 
 @Entity('market_logs')
 export class MarketLogEntity {
@@ -22,9 +22,9 @@ export class MarketLogEntity {
 
   @Column({
     type: 'enum',
-    enum: ProductTypeEnum,
+    enum: MaterialTypesEnum,
   })
-  product_type: ProductTypeEnum;
+  product_type: MaterialTypesEnum;
 
   @Column({ type: 'enum', enum: MoneyOperationsEnum })
   operation: MoneyOperationsEnum;

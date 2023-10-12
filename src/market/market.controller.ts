@@ -24,6 +24,12 @@ export class MarketController {
   async getPrices() {
     return this.marketService.getPrices();
   }
+  @Get('getInStockProducts')
+  @Roles(RoleEnum.USER)
+  @ApiOperation({ summary: 'Получить актуальные товары в наличии' })
+  async getAvalibleProducts() {
+    return this.marketService.getInStockProducts();
+  }
 
   @Post('addPromo')
   @ApiOperation({ summary: 'Добавить новый промокод' })

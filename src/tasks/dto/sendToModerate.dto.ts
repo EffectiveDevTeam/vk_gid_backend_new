@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class SendTaskToModerateDto {
   @ApiProperty({ description: 'ID задачи' })
@@ -7,5 +7,8 @@ export class SendTaskToModerateDto {
 
   @ApiProperty({ description: 'Ссылка на материал' })
   @IsString()
+  @Matches(/^https:\/\/.+\..+([\/])?(.*?)$/iu, {
+    message: 'Недопустимый формат ссылки | link',
+  })
   link: string;
 }

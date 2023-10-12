@@ -7,7 +7,6 @@ export enum DirectionsEnum {
   MESSAGER = 'MESSAGER',
   VIDEO = 'VIDEO',
   RECORDS = 'RECORDS',
-  PLAY = 'PLAY',
   MINI_APPS = 'MINI_APPS',
   EDU = 'EDU',
   COMBO = 'COMBO',
@@ -15,4 +14,5 @@ export enum DirectionsEnum {
   PROTECT = 'PROTECT',
   PAY = 'PAY',
   FOR_DEV = 'FOR_DEV',
+  MARUSIA = 'MARUSIA',
 }

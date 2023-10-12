@@ -26,8 +26,5 @@ export class CreateTaskDto {
   @ArrayMaxSize(10, {
     message: 'Прикрепите  не больше 10 файлов | filesHash',
   })
-  @ArrayMinSize(1, {
-    message: 'Прикрепите хотя бы один файл | filesHash',
-  })
-  filesHash: string[];
+  filesHash?: string[];
 }

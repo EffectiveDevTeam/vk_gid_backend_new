@@ -48,9 +48,10 @@ export class VKService {
     return result;
   }
   async usersGet(
-    userIds: number[],
+    userIdsRaw: number[],
     fields: UsersFieldsEnum[],
   ): Promise<object[]> {
+    const userIds = [...new Set(userIdsRaw)];
     const userInfo = [];
     let infoFromRedis = true;
     for (const user_id of userIds) {

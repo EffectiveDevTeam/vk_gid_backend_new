@@ -14,6 +14,7 @@ import { ProductsEnum } from './enums/products.enum';
 import { MoneyOperationsEnum } from './enums/moneyOperations.enum';
 import { MarketLogEntity, PromocodeEntity } from './entities';
 import { HistoryTypeEnum, ProductTypeEnum } from './enums';
+import { MaterialTypesEnum } from 'src/tasks/enums';
 
 @Injectable()
 export class MarketService {
@@ -42,12 +43,23 @@ export class MarketService {
     return prices;
   }
 
+  async getInStockProducts() {
+    const promoInStock = await this.promocodeRepository
+      .createQueryBuilder('promocodes')
+      .select('promocodes.type', 'type')
+      .where('promocodes.activated_at = :activated', { activated: 0 })
+      .distinct(true)
+      .getRawMany<{ type: string }>();
+
+    return promoInStock.map((promo) => promo.type);
+  }
+
   async marketLogger(
     user: UserEntity,
     product: ProductsEnum,
     operation: MoneyOperationsEnum,
     cost: number,
-    product_type = ProductTypeEnum.CLIP,
+    product_type = MaterialTypesEnum.CLIP,
   ): Promise<MarketLogEntity> {
     return await this.marketLogRepository.save({
       user,
@@ -64,6 +76,7 @@ export class MarketService {
     productType: ProductsEnum,
     operation: MoneyOperationsEnum,
     cost: number,
+    materialType = MaterialTypesEnum.CLIP,
   ): Promise<number> {
     let money = user.balance;
     switch (operation) {
@@ -78,7 +91,7 @@ export class MarketService {
         }
         break;
     }
-    await this.marketLogger(user, productType, operation, cost);
+    await this.marketLogger(user, productType, operation, cost, materialType);
     await this.usersRepository.update(
       { vk_id: user.vk_id },
       { balance: money },
@@ -128,14 +141,17 @@ export class MarketService {
   }
 
   async getHistory(user: UserEntity) {
-    // const history = await this.marketLogRepository.find({
-    //   where: {
-    //     user,
-    //   },
-    //   order: {
-    //     operation_at: 'DESC',
-    //   },
-    // });
+    const historyAddition = await this.mapHistoryAdditions(
+      await this.marketLogRepository.find({
+        where: {
+          user,
+          operation: MoneyOperationsEnum.ADDITION,
+        },
+        order: {
+          operation_at: 'DESC',
+        },
+      }),
+    );
     const promocodes = await this.mapPromocodes(
       await this.promocodeRepository.find({
         where: {
@@ -144,7 +160,11 @@ export class MarketService {
         order: { activated_at: 'DESC' },
       }),
     );
-    return [...promocodes];
+    const history = [...promocodes, ...historyAddition].sort(
+      (a, b) => b.time - a.time,
+    );
+
+    return history;
   }
   async mapPromocodes(promocodes: PromocodeEntity[]) {
     const prices = await this.getPrices();
@@ -152,7 +172,18 @@ export class MarketService {
       ...promocode,
       typeHistory: HistoryTypeEnum.PROMOCODE,
       cost: prices[promocode.type],
+      time: promocode.activated_at,
     }));
     return promocodes_mapped;
+  }
+
+  async mapHistoryAdditions(history: MarketLogEntity[]) {
+    const history_mapped = history.map((history) => ({
+      ...history,
+      typeHistory: HistoryTypeEnum.ADDITION_BALANCE,
+      cost: history.cost,
+      time: history.operation_at,
+    }));
+    return history_mapped;
   }
 }

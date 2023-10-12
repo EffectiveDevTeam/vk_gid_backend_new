@@ -6,12 +6,15 @@ import {
 import { ConcatUsersType, VKService } from '@app/vk';
 import { UserEntity } from 'src/users/entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { LessThan, Like, Repository } from 'typeorm';
 import { TaskEntity } from './entities';
 import { ActionsTaskEnum, MaterialTypesEnum, TaskStatusEnum } from './enums';
 import { HttpMessagesEnum } from '@app/core';
 import { StorageService } from 'src/storage/storage.service';
 import { getTime } from '@app/utils';
+import { MarketService } from 'src/market/market.service';
+import { MoneyOperationsEnum, ProductsEnum } from 'src/market/enums';
+import { TasksPricesEnum } from './enums/tasksPrice.enum';
 
 @Injectable()
 export class TasksService {
@@ -20,6 +23,7 @@ export class TasksService {
     private storageService: StorageService,
     @InjectRepository(TaskEntity)
     private readonly tasksRepository: Repository<TaskEntity>,
+    private readonly marketService: MarketService,
   ) {}
 
   getUsersVkIdsFromTasks(tasks: TaskEntity[]): number[] {
@@ -40,15 +44,17 @@ export class TasksService {
     ]);
   }
 
-  async getTasks(user: UserEntity, isMy = false) {
+  async getTasks(user: UserEntity, isMy = false, search = '') {
     const currentTasks = await this.tasksRepository.findBy({
       status: LessThan(TaskStatusEnum.COMPLETED),
       completed_by: { vk_id: isMy ? user.vk_id : undefined },
+      text: Like(`%${search}%`),
     });
     const complettedTasks = await this.tasksRepository.find({
       where: {
         status: TaskStatusEnum.COMPLETED,
         completed_by: { vk_id: isMy ? user.vk_id : undefined },
+        text: Like(`%${search}%`),
       },
       relations: { author: true, completed_by: true },
       order: { completed_at: 'DESC' },
@@ -143,6 +149,13 @@ export class TasksService {
       case ActionsTaskEnum.APPROVE:
         task.status = TaskStatusEnum.COMPLETED;
         task.completed_at = getTime();
+        this.marketService.manageUserMoney(
+          task.completed_by,
+          ProductsEnum.VOICES_20,
+          MoneyOperationsEnum.ADDITION,
+          TasksPricesEnum[task.material_type],
+          task.material_type,
+        );
         break;
       case ActionsTaskEnum.DELETE:
         task.status = TaskStatusEnum.FREE;

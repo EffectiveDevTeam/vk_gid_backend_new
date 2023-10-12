@@ -54,14 +54,20 @@ export class UsersService implements OnApplicationBootstrap {
       .get<string>('ADMIN_USERS')
       .split(',')
       .map(Number);
-
+    const existUsersIds = (
+      await this.usersRepository.findBy({ vk_id: In(users) })
+    ).map((v) => v.vk_id);
     await Promise.all(
-      users.map(async (vk_id) => {
-        await this.usersRepository.save({
-          vk_id,
-          role: RoleEnum.ADMIN,
-        });
-      }),
+      users
+        .filter((v) => !existUsersIds.includes(v))
+        .map(async (vk_id) => {
+          await this.usersRepository.save({
+            vk_id,
+            role: RoleEnum.ADMIN,
+            registred: getTime(),
+            last_seen: getTime(),
+          });
+        }),
     );
   }
 
@@ -130,6 +136,7 @@ export class UsersService implements OnApplicationBootstrap {
   async getTeam() {
     const staff = await this.usersRepository.find({
       where: { role: MoreThanOrEqual(RoleEnum.USER) },
+      relations: { selected_directions: true },
     });
     const ids = staff.map((user) => user.vk_id);
     return this.vkService.concatUserObject<object>(staff, ids, [

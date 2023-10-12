@@ -13,7 +13,9 @@ export class DirectionsSelectedEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => DirectionsEntity, { eager: true })
+  @ManyToOne(() => DirectionsEntity, (direction) => direction.direction_saved, {
+    eager: true,
+  })
   @JoinColumn()
   direction_info: DirectionsEntity;
 

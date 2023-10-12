@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { DirectionsSelectedEntity } from './directionsUser.entity';
 
 @Entity('directions')
@@ -9,7 +9,7 @@ export class DirectionsEntity {
   @Column({ unique: true })
   key: string;
 
-  @OneToOne(
+  @OneToMany(
     () => DirectionsSelectedEntity,
     (direction_saved) => direction_saved.direction_info,
   )

@@ -4,6 +4,9 @@ import { TasksService } from './tasks.service';
 import { Roles, RoleEnum, User } from '@app/core';
 import { CreateTaskDto, ModerateTaskDto, SendTaskToModerateDto } from './dto';
 import { UserEntity } from 'src/users/entities';
+import { ConcatUsersType } from '@app/vk';
+import { TaskEntity } from './entities';
+import { GetTasksDto } from './dto/getTasks.dto';
 
 @ApiBearerAuth()
 @ApiTags('Задачи')
@@ -18,11 +21,12 @@ export class TasksController {
     return this.tasksService.getTask(+id);
   }
 
-  @Get('getTasks/:is_my')
+  @Post('getTasks')
   @ApiOperation({ summary: 'Получить инфо о задачах' })
   @Roles(RoleEnum.USER)
-  async getTasks(@User() user: UserEntity, @Param('is_my') is_my: string) {
-    return this.tasksService.getTasks(user, Boolean(+is_my));
+  async getTasks(@User() user: UserEntity, @Body() body: GetTasksDto) {
+    const { isMy, search } = body;
+    return this.tasksService.getTasks(user, isMy, search);
   }
 
   @Get('getModerationTasks')
@@ -36,7 +40,7 @@ export class TasksController {
   @ApiOperation({ summary: 'Создать задачу' })
   @Roles(RoleEnum.MODERATOR)
   async createTask(@User() user: UserEntity, @Body() body: CreateTaskDto) {
-    const { taskType, text, filesHash } = body;
+    const { taskType, text, filesHash = [] } = body;
     return this.tasksService.createTask(user, taskType, text, filesHash);
   }
   @Get('takeTask/:id')

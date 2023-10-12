@@ -13,6 +13,6 @@ import { UserEntity } from 'src/users/entities';
   ],
   controllers: [MarketController],
   providers: [MarketService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, MarketService],
 })
 export class MarketModule {}
