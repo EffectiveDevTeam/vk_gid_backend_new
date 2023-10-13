@@ -45,10 +45,13 @@ export class TasksService {
   }
 
   async getTasks(user: UserEntity, isMy = false, search = '') {
-    const currentTasks = await this.tasksRepository.findBy({
-      status: LessThan(TaskStatusEnum.COMPLETED),
-      completed_by: { vk_id: isMy ? user.vk_id : undefined },
-      text: Like(`%${search}%`),
+    const currentTasks = await this.tasksRepository.find({
+      where: {
+        status: LessThan(TaskStatusEnum.COMPLETED),
+        completed_by: { vk_id: isMy ? user.vk_id : undefined },
+        text: Like(`%${search}%`),
+      },
+      order: { created_at: 'DESC' },
     });
     const complettedTasks = await this.tasksRepository.find({
       where: {
@@ -58,7 +61,7 @@ export class TasksService {
       },
       relations: { author: true, completed_by: true },
       order: { completed_at: 'DESC' },
-      take: 10,
+      take: 100,
     });
     const allTasks = [...currentTasks, ...complettedTasks];
 

@@ -15,4 +15,5 @@ export enum DirectionsEnum {
   PAY = 'PAY',
   FOR_DEV = 'FOR_DEV',
   MARUSIA = 'MARUSIA',
+  CORNER = 'CORNER',
 }

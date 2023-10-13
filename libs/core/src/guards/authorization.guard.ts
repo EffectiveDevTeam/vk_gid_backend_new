@@ -66,12 +66,12 @@ export class AuthorizationGuard implements CanActivate {
       throw new UnauthorizedException('Не совпадает подпись');
     }
 
-    // if (
-    //   Date.now() - Number.parseInt(data['vk_ts'] as string) * 1000 >
-    //   TOKEN_LIFETIME
-    // ) {
-    //   throw new UnauthorizedException('Токен просрочен');
-    // }
+    if (
+      Date.now() - Number.parseInt(data['vk_ts'] as string) * 1000 >
+      TOKEN_LIFETIME
+    ) {
+      throw new UnauthorizedException('Токен просрочен');
+    }
 
     let user = await this.usersRepository.findOneBy({ vk_id });
     const currentTime = getTime();
