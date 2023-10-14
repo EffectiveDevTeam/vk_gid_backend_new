@@ -73,6 +73,7 @@ export class AuthorizationGuard implements CanActivate {
       throw new UnauthorizedException('Токен просрочен');
     }
 
+
     let user = await this.usersRepository.findOneBy({ vk_id });
     const currentTime = getTime();
     if (!user) {
